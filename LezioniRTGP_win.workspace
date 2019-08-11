@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Workspace Name="LezioniRTGP_win" Database="" Version="10.0.0">
+  <Project Name="work06b_win" Path="work/work06/work06b_win.project" Active="No"/>
+  <Project Name="test_win" Path="work/test/test_win.project" Active="No"/>
+  <Project Name="lighting" Path="work/lighting/lighting.project" Active="No"/>
+  <Project Name="advanced" Path="work/advanced/advanced.project" Active="No"/>
+  <Project Name="geometry" Path="work/geometry/geometry.project" Active="Yes"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
+      <Environment/>
+      <Project Name="lecture06a_win" ConfigName="Debug"/>
+      <Project Name="work06b_win" ConfigName="Debug"/>
+      <Project Name="test_win" ConfigName="Debug"/>
+      <Project Name="test_win" ConfigName="Debug"/>
+      <Project Name="test_win" ConfigName="Debug"/>
+      <Project Name="test_win" ConfigName="Debug"/>
+      <Project Name="lighting" ConfigName="Debug"/>
+      <Project Name="advanced" ConfigName="Debug"/>
+      <Project Name="geometry" ConfigName="Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Release" Selected="yes">
+      <Environment/>
+      <Project Name="lecture06a_win" ConfigName="Release"/>
+      <Project Name="work06b_win" ConfigName="Release"/>
+      <Project Name="test_win" ConfigName="Release"/>
+      <Project Name="test_win" ConfigName="Release"/>
+      <Project Name="test_win" ConfigName="Release"/>
+      <Project Name="test_win" ConfigName="Release"/>
+      <Project Name="lighting" ConfigName="Release"/>
+      <Project Name="advanced" ConfigName="Release"/>
+      <Project Name="geometry" ConfigName="Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>

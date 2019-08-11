@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Workspace Name="LezioniRTGP_mac" Database="" Version="10.0.0">
+  <Project Name="test_mac" Path="work/test/test_mac.project" Active="No"/>
+  <Project Name="work01_mac" Path="work/work01/work01_mac.project" Active="No"/>
+  <Project Name="lecture01_mac" Path="lectures_final/lecture01/lecture01_mac.project" Active="No"/>
+  <Project Name="work02_mac" Path="work/work02/work02_mac.project" Active="No"/>
+  <Project Name="lecture02a_mac" Path="lectures_final/lecture02/lecture02a_mac.project" Active="No"/>
+  <Project Name="lecture02b_mac" Path="lectures_final/lecture02/lecture02b_mac.project" Active="No"/>
+  <Project Name="work03_mac" Path="work/work03/work03_mac.project" Active="No"/>
+  <Project Name="lecture03a_mac" Path="lectures_final/lecture03/lecture03a_mac.project" Active="No"/>
+  <Project Name="lecture03b_mac" Path="lectures_final/lecture03/lecture03b_mac.project" Active="No"/>
+  <Project Name="lecture03c_mac" Path="lectures_final/lecture03/lecture03c_mac.project" Active="No"/>
+  <Project Name="work04a_mac" Path="work/work04/work04a_mac.project" Active="No"/>
+  <Project Name="lecture04a_mac" Path="lectures_final/lecture04/lecture04a_mac.project" Active="No"/>
+  <Project Name="work05a_mac" Path="work/work05/work05a_mac.project" Active="No"/>
+  <Project Name="work05b_mac" Path="work/work05/work05b_mac.project" Active="No"/>
+  <Project Name="work06a_mac" Path="work/work06/work06a_mac.project" Active="Yes"/>
+  <Project Name="lecture05a_mac" Path="lectures_final/lecture05/lecture05a_mac.project" Active="No"/>
+  <Project Name="lecture05b_mac" Path="lectures_final/lecture05/lecture05b_mac.project" Active="No"/>
+  <Project Name="lecture06a_mac" Path="lectures_final/lecture06/lecture06a_mac.project" Active="No"/>
+  <Project Name="work06b_mac" Path="work/work06/work06b_mac.project" Active="No"/>
+  <BuildMatrix>
+    <WorkspaceConfiguration Name="Debug" Selected="yes">
+      <Environment/>
+      <Project Name="test_mac" ConfigName="Debug"/>
+      <Project Name="work01_mac" ConfigName="Debug"/>
+      <Project Name="lecture01_mac" ConfigName="Debug"/>
+      <Project Name="work02_mac" ConfigName="Debug"/>
+      <Project Name="lecture02a_mac" ConfigName="Debug"/>
+      <Project Name="lecture02b_mac" ConfigName="Debug"/>
+      <Project Name="work03_mac" ConfigName="Debug"/>
+      <Project Name="lecture03a_mac" ConfigName="Debug"/>
+      <Project Name="lecture03b_mac" ConfigName="Debug"/>
+      <Project Name="lecture03c_mac" ConfigName="Debug"/>
+      <Project Name="work04a_mac" ConfigName="Debug"/>
+      <Project Name="lecture04a_mac" ConfigName="Debug"/>
+      <Project Name="work05a_mac" ConfigName="Debug"/>
+      <Project Name="work05b_mac" ConfigName="Debug"/>
+      <Project Name="work06a_mac" ConfigName="Debug"/>
+      <Project Name="lecture05a_mac" ConfigName="Debug"/>
+      <Project Name="lecture05b_mac" ConfigName="Debug"/>
+      <Project Name="lecture06a_mac" ConfigName="Debug"/>
+      <Project Name="work06b_mac" ConfigName="Debug"/>
+    </WorkspaceConfiguration>
+    <WorkspaceConfiguration Name="Release" Selected="yes">
+      <Environment/>
+      <Project Name="test_mac" ConfigName="Release"/>
+      <Project Name="work01_mac" ConfigName="Release"/>
+      <Project Name="lecture01_mac" ConfigName="Release"/>
+      <Project Name="work02_mac" ConfigName="Release"/>
+      <Project Name="lecture02a_mac" ConfigName="Release"/>
+      <Project Name="lecture02b_mac" ConfigName="Release"/>
+      <Project Name="work03_mac" ConfigName="Release"/>
+      <Project Name="lecture03a_mac" ConfigName="Release"/>
+      <Project Name="lecture03b_mac" ConfigName="Release"/>
+      <Project Name="lecture03c_mac" ConfigName="Release"/>
+      <Project Name="work04a_mac" ConfigName="Release"/>
+      <Project Name="lecture04a_mac" ConfigName="Release"/>
+      <Project Name="work05a_mac" ConfigName="Release"/>
+      <Project Name="work05b_mac" ConfigName="Release"/>
+      <Project Name="work06a_mac" ConfigName="Release"/>
+      <Project Name="lecture05a_mac" ConfigName="Release"/>
+      <Project Name="lecture05b_mac" ConfigName="Release"/>
+      <Project Name="lecture06a_mac" ConfigName="Release"/>
+      <Project Name="work06b_mac" ConfigName="Release"/>
+    </WorkspaceConfiguration>
+  </BuildMatrix>
+</CodeLite_Workspace>
