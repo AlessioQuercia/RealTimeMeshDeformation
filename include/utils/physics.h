@@ -1,8 +1,10 @@
 #pragma once
 
 #include <bullet/btBulletDynamicsCommon.h>
+//#include <bullet/btBulletWorldImporter.h>
+#include <vector>
 
-enum shapes{BOX,SPHERE};
+enum shapes{BOX,SPHERE,TRIANGLE_MESH,CONVEX_HULL};
 
 class Physics
 {
@@ -72,6 +74,98 @@ public:
         
         return body;
     }
+    
+    btRigidBody* createRigidBody(int type, glm::vec3 pos, glm::vec3 size, glm::vec3 rot, float m, float friction, float restitution, vector<Mesh> meshes)
+    {
+        btConvexHullShape* cShape = NULL;
+        
+        btVector3 position = btVector3(pos.x, pos.y, pos.z);
+        btQuaternion rotation;
+        rotation.setEuler(rot.x, rot.y, rot.z);
+        
+        cShape = new btConvexHullShape();
+        for (int i = 0; i<meshes.size(); i++)
+        {
+            for (int j = 0; j<meshes[i].vertices.size(); j++)
+            {
+                cShape->addPoint(btVector3(meshes[i].vertices[j].Position.x, 
+                            meshes[i].vertices[j].Position.y, meshes[i].vertices[j].Position.z));
+            }
+        }
+
+//        cShape->setLocalScaling(position);
+//        cShape->recalcLocalAabb();
+
+        this->collisionShapes.push_back(cShape);
+        
+        btTransform objTransform;
+        objTransform.setIdentity();
+        objTransform.setRotation(rotation);
+        objTransform.setOrigin(position);
+        
+        btScalar mass = m; // if we want the object to be static, we need to set its mass = 0
+        bool isDynamic = (mass != 0.0f); // if the mass is 0, then the object is static, otherwise it is dynamic
+        
+        btVector3 localInertia(0.0f, 0.0f, 0.0f);
+        if (isDynamic)
+            cShape->calculateLocalInertia(mass, localInertia);
+            
+        btDefaultMotionState* motionState = new btDefaultMotionState(objTransform);
+        
+        btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, cShape, localInertia);
+        rbInfo.m_friction = friction;
+        rbInfo.m_restitution = restitution;
+        
+        btRigidBody* body = new btRigidBody(rbInfo);
+        this->dynamicsWorld->addRigidBody(body);
+        
+        return body;
+    }
+    
+//    btRigidBody* createRigidBody(int type, glm::vec3 pos, glm::vec3 size, glm::vec3 rot, float m, float friction, float restitution, 
+//            const char* fileName, const char* preSwapFilenameOut)
+//    {
+//        btCollisionShape* cShape = NULL;
+//        
+//        btVector3 position = btVector3(pos.x, pos.y, pos.z);
+//        btQuaternion rotation;
+//        rotation.setEuler(rot.x, rot.y, rot.z);
+//        
+//        btBulletWorldImporter importer = btBulletWorldImporter(dynamicsWorld);
+//        
+//        importer.loadFile(fileName, preSwapFilenameOut);
+//            
+//        this->collisionShapes.push_back(cShape);
+//        
+//        btTransform objTransform;
+//        objTransform.setIdentity();
+//        objTransform.setRotation(rotation);
+//        objTransform.setOrigin(position);
+//        
+//        btScalar mass = m; // if we want the object to be static, we need to set its mass = 0
+//        bool isDynamic = (mass != 0.0f); // if the mass is 0, then the object is static, otherwise it is dynamic
+//        
+//        btVector3 localInertia(0.0f, 0.0f, 0.0f);
+//        if (isDynamic)
+//            cShape->calculateLocalInertia(mass, localInertia);
+//            
+//        btDefaultMotionState* motionState = new btDefaultMotionState(objTransform);
+//        
+//        btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, cShape, localInertia);
+//        rbInfo.m_friction = friction;
+//        rbInfo.m_restitution = restitution;
+//        
+//        if (type == SPHERE)
+//        {
+//            rbInfo.m_angularDamping = 0.3f;
+//            rbInfo.m_rollingFriction = 0.3f;
+//        }
+//        
+//        btRigidBody* body = new btRigidBody(rbInfo);
+//        this->dynamicsWorld->addRigidBody(body);
+//        
+//        return body;
+//    }
     
     void Clear()
     {

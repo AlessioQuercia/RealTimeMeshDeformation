@@ -4,7 +4,11 @@
   <Project Name="test_win" Path="work/test/test_win.project" Active="No"/>
   <Project Name="lighting" Path="work/lighting/lighting.project" Active="No"/>
   <Project Name="advanced" Path="work/advanced/advanced.project" Active="No"/>
-  <Project Name="geometry" Path="work/geometry/geometry.project" Active="Yes"/>
+  <Project Name="geometry" Path="work/geometry/geometry.project" Active="No"/>
+  <Project Name="mapping" Path="work/mapping/mapping.project" Active="No"/>
+  <Project Name="TransformFeedback" Path="work/TransformFeedback/TransformFeedback.project" Active="No"/>
+  <Project Name="Feedback" Path="work/Feedback/Feedback.project" Active="Yes"/>
+  <Project Name="DeferredRendering" Path="work/DeferredRendering/DeferredRendering.project"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>
@@ -17,6 +21,10 @@
       <Project Name="lighting" ConfigName="Debug"/>
       <Project Name="advanced" ConfigName="Debug"/>
       <Project Name="geometry" ConfigName="Debug"/>
+      <Project Name="mapping" ConfigName="Debug"/>
+      <Project Name="TransformFeedback" ConfigName="Debug"/>
+      <Project Name="Feedback" ConfigName="Debug"/>
+      <Project Name="DeferredRendering" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Environment/>
@@ -29,6 +37,10 @@
       <Project Name="lighting" ConfigName="Release"/>
       <Project Name="advanced" ConfigName="Release"/>
       <Project Name="geometry" ConfigName="Release"/>
+      <Project Name="mapping" ConfigName="Release"/>
+      <Project Name="TransformFeedback" ConfigName="Release"/>
+      <Project Name="Feedback" ConfigName="Release"/>
+      <Project Name="DeferredRendering" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>

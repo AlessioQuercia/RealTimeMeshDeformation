@@ -35,9 +35,10 @@ const unsigned int SCR_HEIGHT = 768;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
-float lastX = (float)SCR_WIDTH / 2.0;
-float lastY = (float)SCR_HEIGHT / 2.0;
+GLfloat lastX = SCR_WIDTH / 2.0;
+GLfloat lastY = SCR_HEIGHT / 2.0;
 bool firstMouse = true;
+double cursorX, cursorY;
 
 // timing
 float deltaTime = 0.0f;
@@ -74,10 +75,6 @@ GLfloat planeMaterial[] = {0.0,0.5,0.0};
 // color of the bullets
 GLfloat shootColor[] = {1.0,1.0,0.0};
 
-btRigidBody* spheres[600];
-glm::vec3 spheresLastPositions[600];
-int sphereIndex = -1;
-
 glm::vec3 verticesToDeform[600];
 glm::vec3 hittingDirections[600];
 int sphereDirCooldown = 0;
@@ -107,14 +104,19 @@ int pointlightsCooldown;
 bool flashlightOn;
 int flashlightCooldown;
 
+bool shooting;
+int shootingCooldown;
+
 int main()
 {
     dirlightOn = false;
     pointlightsOn = false;
     flashlightOn = false;
+    shooting = false;
     dirlightCooldown = 0;
     pointlightsCooldown = 0;
     flashlightCooldown = 0;
+    shootingCooldown = 0;
     
     // glfw: initialize and configure
     // ------------------------------
@@ -174,12 +176,12 @@ int main()
     Shader shader("geometry\\shaders\\explode.VERT", "geometry\\shaders\\explode.FRAG", "geometry\\shaders\\explode.GEO");
     // the Shader Program for the objects used in the application
     Shader object_shader("geometry\\shaders\\13_phong.vert", "geometry\\shaders\\14_ggx.frag");
-    Shader deformShader("geometry\\shaders\\shader.VERT", "geometry\\shaders\\shader.FRAG"); //"geometry\\shaders\\shader.GEO");
+    Shader deformShader("geometry\\shaders\\shader.VERT", "geometry\\shaders\\shader.FRAG"); //, "geometry\\shaders\\shader.GEO");
 
     // load models
     // -----------
-    Model nanosuitModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\nanosuit\\nanosuit.obj");
-    Model cubeModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\highCube.obj");
+//    Model nanosuitModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\nanosuit\\nanosuit.obj");
+    Model cubeModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\highCube2.obj");
     Model sphereModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj");
     
     // dimensions and position of the static plane
@@ -189,7 +191,7 @@ int main()
     
     btRigidBody* plane = bulletSimulation.createRigidBody(BOX, plane_pos, plane_size, plane_rot, 0.0f, 0.3f, 0.3f);
     
-    GLint num_side = 1;
+    GLint num_side = 2;
     // total number of the cubes
     GLint total_cubes = num_side*num_side;
     GLint i,j;
@@ -206,40 +208,60 @@ int main()
     glm::vec3 sphere_size = glm::vec3(0.1f, 0.1f, 0.1f);
     
     btRigidBody* cube;
+    glm::vec3 radius = glm::vec3(2.5f, 2.5f, 2.5f);
+    // float mass = 9999999.0f;
+    float mass = 0.0f;  // static
 
     // we create a 5x5 grid of rigid bodies
     for(i = 0; i < num_side; i++ )
     {
         for(j = 0; j < num_side; j++ )
         {
-            cube_pos = glm::vec3((i - num_side)+3, -0.5f, (num_side - j));
-            float mass = 9999999.0f;
-//            glm::vec3 radius = glm::vec3(1.5f, 1.5f, 1.5f);
-            cube = bulletSimulation.createRigidBody(BOX, cube_pos, cube_size, cube_rot, mass, 0.3f, 0.3f);
-//            cube = bulletSimulation.createRigidBody(SPHERE, cube_pos, radius, cube_rot, mass, 0.3f, 0.3f);
+            cube_pos = glm::vec3((i - num_side)*15, 1.6f, (num_side - j)*15);
+//            cube = bulletSimulation.createRigidBody(BOX, cube_pos, cube_size, cube_rot, mass, 0.3f, 0.3f);
+            
+//            cube = bulletSimulation.createRigidBody(CONVEX_HULL, cube_pos, cube_size, cube_rot, mass, 0.3f, 0.3f, 
+//                                                    cubeModel.meshes);
+
+//            btTriangleMesh triangleMesh;
+//            for (int i = 0; i<cubeModel.meshes.size(); i++);
+//            {
+////                printf("%d\n", cubeModel.meshes[i].vertices.size());
+//                for (int j = 0; j<cubeModel.meshes[i].indices.size(); j+=3)
+//                {
+//                    int index = cubeModel.meshes[i].indices[j];
+//      
+//                    btVector3 first = btVector3(cubeModel.meshes[i].vertices[index].Position.x, 
+//                                                cubeModel.meshes[i].vertices[index].Position.y,
+//                                                cubeModel.meshes[i].vertices[index].Position.z);
+//
+//                    btVector3 second = btVector3(cubeModel.meshes[i].vertices[index + 1].Position.x, 
+//                                                cubeModel.meshes[i].vertices[index + 1].Position.y,
+//                                                cubeModel.meshes[i].vertices[index + 1].Position.z);
+//
+//                    btVector3 third = btVector3(cubeModel.meshes[i].vertices[index + 2].Position.x, 
+//                                                cubeModel.meshes[i].vertices[index + 2].Position.y,
+//                                                cubeModel.meshes[i].vertices[index + 2].Position.z);
+//
+//                    triangleMesh.addTriangleTriangle(first, second, third, true);
+//                }
+//            }
+//            cube = bulletSimulation.createRigidBody(TRIANGLE_MESH, cube_pos, cube_size, cube_rot, mass, 0.3f, 0.3f, triangleMesh);
+
+//            cube = bulletSimulation.createRigidBody(BOX, cube_pos, radius, cube_rot, mass, 0.3f, 0.3f,
+//                "C:\\Users\\Alessio\\Desktop\\Models\\highCube.bullet", "C:\\Users\\Alessio\\Desktop\\Models\\highCubeNative.bullet");
+                
+            if (i%2 == 0)
+                cube = bulletSimulation.createRigidBody(SPHERE, cube_pos, radius, cube_rot, mass, 0.3f, 0.3f);
+            else
+                cube = bulletSimulation.createRigidBody(BOX, cube_pos, radius, cube_rot, mass, 0.3f, 0.3f);
         }
     }
 
     // Projection matrix: FOV angle, aspect ratio, near and far planes
-    projection = glm::perspective(45.0f, (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.05f, 100.0f);
+    projection = glm::perspective(45.0f, (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 100000.0f);
 
     GLfloat maxSecPerFrame = 60.0f;
-    
-    float lineVertices[] = {
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f
-    };
-    
-    // line VAO
-    unsigned int lineVAO, lineVBO;
-    glGenVertexArrays(1, &lineVAO);
-    glGenBuffers(1, &lineVBO);
-    glBindVertexArray(lineVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices), &lineVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glBindVertexArray(0);
 
     // render loop
     // -----------
@@ -253,6 +275,8 @@ int main()
             pointlightsCooldown--;
         if (flashlightCooldown > 0)
             flashlightCooldown--;
+        if (shootingCooldown > 0)
+            shootingCooldown--;
         
         // per-frame time logic
         // --------------------
@@ -267,6 +291,8 @@ int main()
         glfwPollEvents();
         // we apply FPS camera movements
         apply_camera_movements();
+        
+        view = camera.GetViewMatrix();
 
         // render
         // ------
@@ -282,7 +308,13 @@ int main()
             
         bulletSimulation.dynamicsWorld->stepSimulation((deltaTime < maxSecPerFrame ? deltaTime : maxSecPerFrame), 0);
         
-        /////////////////// OBJECTS ////////////////////////////////////////////////
+        //////////////////////////    PRE - RENDER SCENE    //////////////////////////
+        
+        // 1 - Check whether there are new collision points. If yes, store them and their respective directions.
+        // 2 - If there are new collision points, pre - render the deformable objects and update their displacement and normal maps
+        // 3 - Render the whole scene (including the deformable objects, this time by using the updated displacement and normal maps).
+        
+        //////////////////////////    RENDER SCENE    //////////////////////////
         // We "install" the selected Shader Program as part of the current rendering process
         object_shader.use();
 
@@ -320,7 +352,6 @@ int main()
         // we render the plane
         cubeModel.Draw(object_shader);
         planeModelMatrix = glm::mat4(1.0f);
-        
         
         // GET COLLISIONS POINTS
         bulletSimulation.dynamicsWorld->debugDrawWorld();
@@ -362,7 +393,6 @@ int main()
             contactManifold->clearManifold();	
         }
         
-        
         ///// Render the deformable objects
         // model and normal matrices
         glm::mat4 objModelMatrix;
@@ -383,7 +413,10 @@ int main()
         {
             if (i <= total_cubes)
             {
-                objectModel = &cubeModel;
+                if (i < 3)
+                    objectModel = &sphereModel;
+                else
+                    objectModel = &cubeModel;
                 objectShader = &deformShader;
                 obj_size = cube_size;
                 glUniform3fv(objDiffuseLocation, 1, diffuseColor);
@@ -401,47 +434,21 @@ int main()
             objectShader->use();
             
             // we pass projection and view matrices to the Shader Program
-            glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projection));
-            glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(view));
-
-            // we determine the position in the Shader Program of the uniform variable
-            GLint pointLightLocation = glGetUniformLocation(objectShader->ID, "pointLightPosition");
-            GLint pointLightLocation1 = glGetUniformLocation(objectShader->ID, "pointLightPosition1");
-            GLint kdLocation = glGetUniformLocation(objectShader->ID, "Kd");
-            GLint alphaLocation = glGetUniformLocation(objectShader->ID, "alpha");
-            GLint f0Location = glGetUniformLocation(objectShader->ID, "F0");
-
-            // we assign the value to the uniform variable
-            glUniform3fv(pointLightLocation, 1, glm::value_ptr(lightPos0));
-            glUniform3fv(pointLightLocation1, 1, glm::value_ptr(lightPos1));
-            glUniform1f(kdLocation, Kd);
-            glUniform1f(alphaLocation, alpha);
-            glUniform1f(f0Location, F0);
+            glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+            glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
         
             btCollisionObject* obj = bulletSimulation.dynamicsWorld->getCollisionObjectArray()[i];
-            
             btRigidBody* body = btRigidBody::upcast(obj);
             body->getMotionState()->getWorldTransform(transform);
             transform.getOpenGLMatrix(matrix);
             
-//            glm::vec3 pos = glm::vec3(transform.getOrigin().x(), transform.getOrigin().y(), transform.getOrigin().z());
-//            
-//            glm::vec3 direction = pos - spheresLastPositions[i-2];
-//            
-//            if (sphereDirCooldown == 0)
-//            {
-//                spheresDirections[i-2] = direction;
-//                spheresLastPositions[i-2] = pos;
-//                sphereDirCooldown = 500000;
-//            }
-            
             objModelMatrix = glm::make_mat4(matrix)*glm::scale(objModelMatrix, obj_size);
             objNormalMatrix = glm::inverseTranspose(glm::mat3(view*objModelMatrix));
             
-            glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(objModelMatrix));
-            glUniformMatrix3fv(glGetUniformLocation(objectShader->ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(objNormalMatrix));
+            glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "model"), 1, GL_FALSE, glm::value_ptr(objModelMatrix));
+//            glUniformMatrix3fv(glGetUniformLocation(objectShader->ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(objNormalMatrix));
         
-            if (index_vtd + 1 < 999 && (contactPoint1.x != 0.0f && contactPoint1.y != 0.0f && contactPoint1.z != 0.0f))
+            if (index_vtd + 1 < 599 && (contactPoint1.x != 0.0f && contactPoint1.y != 0.0f && contactPoint1.z != 0.0f))
             {
                 if (index_vtd == 0 || (index_vtd > 0 && verticesToDeform[index_vtd-1].x != contactPoint1.x
                                                      && verticesToDeform[index_vtd-1].y != contactPoint1.y 
@@ -453,12 +460,16 @@ int main()
                     printf("%d\n", index_vtd);
                 }
             }
+            else if (index_vtd + 1 >= 599 && (contactPoint1.x != 0.0f && contactPoint1.y != 0.0f && contactPoint1.z != 0.0f))
+            {
+                index_vtd = 0;
+            }
             
             // renderizza il modello
             if (objectShader == &deformShader)
             {
-                glUniform3fv(glGetUniformLocation(objectShader->ID, "impactPoints"), 1000, glm::value_ptr(verticesToDeform[0]));
-                glUniform3fv(glGetUniformLocation(objectShader->ID, "hittingDirections"), 1000, glm::value_ptr(hittingDirections[0]));
+                glUniform3fv(glGetUniformLocation(objectShader->ID, "impactPoints"), 600, glm::value_ptr(verticesToDeform[0]));
+                glUniform3fv(glGetUniformLocation(objectShader->ID, "hittingDirections"), 600, glm::value_ptr(hittingDirections[0]));
                 glUniform3fv(objDiffuseLocation, 1, diffuseColor);
                 
                 objectShader->setVec3("viewPos", camera.Position);
@@ -512,29 +523,37 @@ int main()
                 objectShader->setBool("spotLight.on", flashlightOn);
                 objectShader->setVec3("spotLight.position", camera.Position);
                 objectShader->setVec3("spotLight.direction", camera.Front);
-                objectShader->setVec3("spotLight.ambient", 0.1f, 0.1f, 0.1f);
-                objectShader->setVec3("spotLight.diffuse", 0.4f, 0.4f, 0.4f);
-                objectShader->setVec3("spotLight.specular", 0.4f, 0.4f, 0.4f);
+                objectShader->setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+                objectShader->setVec3("spotLight.diffuse", 0.7f, 0.7f, 0.7f);
+                objectShader->setVec3("spotLight.specular", 0.9f, 0.9f, 0.9f);
                 objectShader->setFloat("spotLight.constant", 1.0f);
                 objectShader->setFloat("spotLight.linear", 0.09f);
                 objectShader->setFloat("spotLight.quadratic", 0.032f);
-                objectShader->setFloat("spotLight.cutOff", glm::cos(glm::radians(10.0f)));
-                objectShader->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-                
-//                objectShader->setVec3("contactPoint1", contactPoint1);
-//                objectShader->setVec3("contactPoint2", contactPoint2);
-//                objectShader->setFloat("distance", (float)distance);
+                objectShader->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+                objectShader->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
             }
             else
+            {
                 glUniform3fv(objDiffuseLocation, 1, shootColor);
+                glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(objModelMatrix));
+                glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projection));
+                glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "viewMatrix   "), 1, GL_FALSE, glm::value_ptr(view));
+                glUniformMatrix3fv(glGetUniformLocation(objectShader->ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(objNormalMatrix));
+            }
+                
+//            // view/projection transformations
+//            glm::mat4 model = glm::mat4(1.0f);
+//            glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100000.0f);
+//            glm::mat4 view = camera.GetViewMatrix();
+//            objectShader->setMat4("model", model);
+//            objectShader->setMat4("view", view);
+//            objectShader->setMat4("projection", projection);
             objectModel->Draw(*objectShader);
             objModelMatrix = glm::mat4(1.0f);
         }
         
 
         // configure transformation matrices
-        projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.05f, 100.0f);
-        view = camera.GetViewMatrix();;
         glm::mat4 model = glm::mat4(1.0f);
         shader.use();
         model = glm::translate(model, glm::vec3(0.0f, -0.8f, -10.0f)); // translate it down so it's at the center of the scene
@@ -546,8 +565,30 @@ int main()
         // add time component to geometry shader in the form of a uniform
         shader.setFloat("time", glfwGetTime());
 
-        // draw model
-        nanosuitModel.Draw(shader);
+
+        if (shooting && shootingCooldown == 0)
+        {
+            shootingCooldown = 15;
+            btVector3 pos, impulse;
+            glm::vec3 radius = glm::vec3(0.2f, 0.2f, 0.2f);
+            glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f);
+            glm::vec4 shoot;
+            GLfloat shootInitialSpeed = 30.0f;
+            btRigidBody* sphere;
+            glm::mat4 unproject;
+            
+            sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, radius, rot, 1, 0.3f, 0.3f);
+            shoot.x = camera.Front.x/SCR_WIDTH;
+            shoot.y = camera.Front.y/SCR_HEIGHT;
+            shoot.z = 1.0f;
+            shoot.w = 1.0f;
+            
+            unproject = glm::inverse(projection*view);
+            shoot = glm::normalize(unproject*shoot) * shootInitialSpeed;
+            
+            impulse = btVector3(shoot.x, shoot.y, shoot.z);
+            sphere->applyCentralImpulse(impulse);
+        }
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -617,29 +658,40 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         }
     }
     
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
-        btVector3 pos, impulse;
-        glm::vec3 radius = glm::vec3(0.2f, 0.2f, 0.2f);
-        glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f);
-        glm::vec4 shoot;
-        GLfloat shootInitialSpeed = 30.0f;
-        btRigidBody* sphere;
-        glm::mat4 unproject;
-        
-        sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, radius, rot, 1, 0.3f, 0.3f);
-        shoot.x = camera.Front.x/SCR_WIDTH;
-        shoot.y = camera.Front.y/SCR_HEIGHT;
-        shoot.z = 1.0f;
-        shoot.w = 1.0f;
-        
-        unproject = glm::inverse(projection*view);
-        shoot = glm::normalize(unproject*shoot) * shootInitialSpeed;
-        
-        impulse = btVector3(shoot.x, shoot.y, shoot.z);
-        sphere->applyCentralImpulse(impulse);
-        
-        spheres[++sphereIndex] = sphere;
+        shooting = true;
+//        shootingCooldown = 200;
+    }
+    
+//    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+//    if (shooting && shootingCooldown == 0)
+//    {
+//        btVector3 pos, impulse;
+//        glm::vec3 radius = glm::vec3(0.2f, 0.2f, 0.2f);
+//        glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f);
+//        glm::vec4 shoot;
+//        GLfloat shootInitialSpeed = 30.0f;
+//        btRigidBody* sphere;
+//        glm::mat4 unproject;
+//        
+//        sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, radius, rot, 1, 0.3f, 0.3f);
+//        shoot.x = camera.Front.x/SCR_WIDTH;
+//        shoot.y = camera.Front.y/SCR_HEIGHT;
+//        shoot.z = 1.0f;
+//        shoot.w = 1.0f;
+//        
+//        unproject = glm::inverse(projection*view);
+//        shoot = glm::normalize(unproject*shoot) * shootInitialSpeed;
+//        
+//        impulse = btVector3(shoot.x, shoot.y, shoot.z);
+//        sphere->applyCentralImpulse(impulse);
+//    }
+    
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
+    {
+        shooting = false;
+        shootingCooldown = 0;
     }
     
     // we keep trace of the pressed keys
@@ -671,9 +723,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
         lastY = ypos;
         firstMouse = false;
     }
+    
+    cursorX = xpos;
+    cursorY = ypos;
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    GLfloat xoffset = xpos - lastX;
+    GLfloat yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
 
     lastX = xpos;
     lastY = ypos;
