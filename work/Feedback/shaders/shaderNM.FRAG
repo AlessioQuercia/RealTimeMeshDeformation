@@ -74,7 +74,7 @@ float getDistance(vec4 point1, vec4 point2)
 	return sqrt( pow(point1.x - point2.x, 2) + pow(point1.y - point2.y, 2) + pow(point1.z - point2.z, 2) );
 }
 
-uniform sampler2D normalMap;  
+uniform sampler2D displacementMap;
 
 void main()
 {           
@@ -85,7 +85,7 @@ void main()
 
     // properties
     vec3 viewDir = normalize(viewPosition - FragPos.xyz);
-    vec3 result = vec3(0.1f, 0.1f, 0.1f);
+    vec3 result = texture(displacementMap, TexCoords).rgb;
     // phase 1: Directional lighting
     if (dirLight.on)
         result += CalcDirLight(dirLight, norm, viewDir);

@@ -204,9 +204,9 @@ int main()
     // build and compile shaders
     // -------------------------
     // the Shader Program for the objects used in the application
-    Shader object_shader("Feedback\\shaders\\13_phong.vert", "Feedback\\shaders\\14_ggx.frag");
-    Shader deformShader("Feedback\\shaders\\shaderNM.VERT", "Feedback\\shaders\\shaderNM.FRAG");
-    Shader updateDisplacementShader("Feedback\\shaders\\shaderNMDisplacement.VERT", "Feedback\\shaders\\shaderNMDisplacement.FRAG");
+    Shader object_shader("DeferredRendering\\shaders\\13_phong.vert", "Feedback\\shaders\\14_ggx.frag");
+    Shader deformShader("DeferredRendering\\shaders\\shaderNM.VERT", "Feedback\\shaders\\shaderNM.FRAG");
+    Shader updateDisplacementShader("DeferredRendering\\shaders\\shaderNMDisplacement.VERT", "Feedback\\shaders\\shaderNMDisplacement.FRAG");
 
     // load models
     // -----------
@@ -240,25 +240,6 @@ int main()
     // -----------------------------------------------------------------------------
     unsigned int normalMap = loadTexture("\\models\\cube\\texture_normal1.png");
     unsigned int displacementMap = loadTexture("\\models\\cube\\texture_displacement1.png");
-    
-    // framebuffer configuration
-    // -------------------------
-    unsigned int framebufferD;
-    glGenFramebuffers(1, &framebufferD);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferD);
-    // create a color attachment texture
-//    unsigned int textureColorbuffer;
-    glGenTextures(1, &displacementMap);
-    glBindTexture(GL_TEXTURE_2D, displacementMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, displacementMap, 0);
-
-    // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
     // render loop
     // -----------
@@ -317,13 +298,6 @@ int main()
         {
             if (first)
                 first = false;
-            // bind to framebuffer and draw scene as we normally would to color texture 
-//            glViewport(0, 0, 1024, 1024);
-            glBindFramebuffer(GL_FRAMEBUFFER, framebufferD);
-                // bind maps
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, displacementMap);
-            glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
 
             // make sure we clear the framebuffer's content
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -488,12 +462,9 @@ int main()
         //////////////////////////    RENDER SCENE    //////////////////////////
         
         // bind maps
-        glActiveTexture(GL_TEXTURE0);
+//        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, displacementMap);
         
-        // now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
         // clear all relevant buffers
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f); 
         glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT);

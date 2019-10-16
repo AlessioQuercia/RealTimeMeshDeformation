@@ -4,9 +4,9 @@ in vec2 TexCoords;
 in vec4 FragPos;
 in vec3 Normal;
 
-out vec3 colorFrag;
+out vec4 colorFrag;
 
 void main()
 {           
-    colorFrag = FragPos.xyz;
+    colorFrag = vec4(1.0); //FragPos;
 }

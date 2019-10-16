@@ -20,19 +20,22 @@ out vec4 FragPos;
 
 out vec3 Normal;
 
-uniform sampler2D displacementMap;  
+uniform sampler2D displacementMap;
 
 void main()
 {
 	TexCoords = texcoords;
 
-	vec3 pos = texture(displacementMap, TexCoords).rgb;
+	// vec3 pos = texture(displacementMap, TexCoords).rgb;
+	vec3 pos = position;
 
 	// if (pos.x == 0 && pos.y == 0 && pos.z == 0)
-	// 	FragPos = vec4(position, 1.0);
+	// 	FragPos = model * vec4(position, 1.0);
 	// else
-	// 	FragPos = vec4(pos, 1.0);
-	FragPos = vec4(pos, 1.0);
+	// 	FragPos = model * vec4(pos, 1.0);
+	// FragPos = model * vec4(pos, 1.0);
+
+	FragPos = model * vec4(pos, 1.0);
 
 	Normal = mat3(transpose(inverse(model))) * normal;
 

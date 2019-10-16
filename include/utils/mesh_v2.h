@@ -125,6 +125,37 @@ public:
             glBindTexture(GL_TEXTURE_2D, 0);
         }
     }
+    
+    void UpdateMesh()
+    {
+        // VAO is made "active"
+        glBindVertexArray(this->VAO);
+        // we copy data in the VBO - we must set the data dimension, and the pointer to the structure cointaining the data
+        glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+        glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), &this->vertices[0], GL_STATIC_DRAW);
+        // we copy data in the EBO - we must set the data dimension, and the pointer to the structure cointaining the data
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), &this->indices[0], GL_STATIC_DRAW);
+
+        // we set in the VAO the pointers to the different vertex attributes (with the relative offsets inside the data structure)
+        // vertex positions
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
+        // Normals
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Normal));
+        // Texture Coordinates
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, TexCoords));
+        // Tangent
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Tangent));
+        // Bitangent
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Bitangent));
+
+        glBindVertexArray(0);
+    }
 
     //////////////////////////////////////////
 

@@ -13,7 +13,7 @@ class Shader
 {
 public:
     unsigned int ID;
-    bool feedback = false;
+    bool feedback;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
     Shader(const char* vertexPath, const char* fragmentPath, bool feedback = false, const char* geometryPath = nullptr)

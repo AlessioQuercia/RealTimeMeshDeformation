@@ -24,6 +24,8 @@
     <Configuration Name="Debug" CompilerType="MinGW ( MinGW )" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
       <Compiler Options="-g;-O0;-Wall;-std=c++0x" C_Options="-g;-O0;-Wall" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
         <IncludePath Value="."/>
+        <IncludePath Value="../../include"/>
+        <IncludePath Value="../../include/bullet"/>
       </Compiler>
       <Linker Options="-static-libgcc -static-libstdc++" Required="yes">
         <LibraryPath Value="../../libs/win"/>

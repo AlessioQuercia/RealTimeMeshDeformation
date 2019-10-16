@@ -58,12 +58,7 @@ public:
     // the folder on disk of the model (needed for the loading of textures, if model is provided of textures)
     string directory;
     
-    bool feedback = false;
-    
-    void setFeedback(bool feedback)
-    {
-        this->feedback = feedback;
-    }
+    bool feedback;
 
     //////////////////////////////////////////
 
@@ -72,6 +67,10 @@ public:
     {
         this->loadModel(path);
         this->feedback = feedback;
+        if(feedback)
+            printf("Feedback MODEL\n");
+        else
+            printf("NoFeedback MODEL\n");
     }
 
     //////////////////////////////////////////

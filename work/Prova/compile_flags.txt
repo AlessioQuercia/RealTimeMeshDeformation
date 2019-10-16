@@ -1,0 +1,11 @@
+-Ic:\MinGW\lib\gcc\mingw32\8.2.0\include\c++
+-Ic:\MinGW\lib\gcc\mingw32\8.2.0\include\c++\mingw32
+-Ic:\MinGW\lib\gcc\mingw32\8.2.0\include\c++\backward
+-Ic:\MinGW\lib\gcc\mingw32\8.2.0\include
+-Ic:\MinGW\include
+-Ic:\MinGW\lib\gcc\mingw32\8.2.0\include-fixed
+-IC:\Users\Alessio\Documents\GitHub\Progetto_RTGP\work\Prova
+-IC:\Users\Alessio\Documents\GitHub\Progetto_RTGP\include
+-IC:\Users\Alessio\Documents\GitHub\Progetto_RTGP\include\bullet
+-target
+x86_64-pc-windows-gnu

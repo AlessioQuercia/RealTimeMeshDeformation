@@ -57,13 +57,19 @@ public:
     vector<Mesh> meshes;
     // the folder on disk of the model (needed for the loading of textures, if model is provided of textures)
     string directory;
+    
+    int type;
 
     //////////////////////////////////////////
-
+    
+    // default constructor
+    Model() { }
+    
     // constructor
-    Model(const string& path)
+    Model(const string& path, int type = 0)
     {
         this->loadModel(path);
+        this->type = type;
     }
 
     //////////////////////////////////////////
@@ -83,6 +89,20 @@ public:
     {
         for(GLuint i = 0; i < this->meshes.size(); i++)
             this->meshes[i].Delete();
+    }
+    
+    void UpdateData(glm::vec3 data[])
+    {
+        int cnt = 0;
+        for (int i = 0; i<meshes.size(); i++)
+        {
+            for (int j = 0; j<meshes[i].vertices.size(); j++)
+            {
+                meshes[i].vertices[j].Position = data[cnt++];
+                meshes[i].vertices[j].Normal = data[cnt++];
+            }
+            meshes[i].UpdateMesh();
+        }
     }
 
 
@@ -190,7 +210,7 @@ private:
             }
             else{
                 vertex.TexCoords = glm::vec2(0.0f, 0.0f);
-                cout << "WARNING::ASSIMP:: MODEL WITHOUT UV COORDINATES -> TANGENT AND BITANGENT ARE = 0" << endl;
+//                cout << "WARNING::ASSIMP:: MODEL WITHOUT UV COORDINATES -> TANGENT AND BITANGENT ARE = 0" << endl;
             }
             // we add the vertex to the list
             vertices.push_back(vertex);

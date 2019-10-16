@@ -7,8 +7,10 @@
   <Project Name="geometry" Path="work/geometry/geometry.project" Active="No"/>
   <Project Name="mapping" Path="work/mapping/mapping.project" Active="No"/>
   <Project Name="TransformFeedback" Path="work/TransformFeedback/TransformFeedback.project" Active="No"/>
-  <Project Name="Feedback" Path="work/Feedback/Feedback.project" Active="Yes"/>
-  <Project Name="DeferredRendering" Path="work/DeferredRendering/DeferredRendering.project"/>
+  <Project Name="Feedback" Path="work/Feedback/Feedback.project" Active="No"/>
+  <Project Name="DeferredRendering" Path="work/DeferredRendering/DeferredRendering.project" Active="No"/>
+  <Project Name="Prova" Path="work/Prova/Prova.project" Active="No"/>
+  <Project Name="FeeFeed" Path="work/FeeFeed/FeeFeed.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>
@@ -25,6 +27,8 @@
       <Project Name="TransformFeedback" ConfigName="Debug"/>
       <Project Name="Feedback" ConfigName="Debug"/>
       <Project Name="DeferredRendering" ConfigName="Debug"/>
+      <Project Name="Prova" ConfigName="Debug"/>
+      <Project Name="FeeFeed" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Environment/>
@@ -41,6 +45,8 @@
       <Project Name="TransformFeedback" ConfigName="Release"/>
       <Project Name="Feedback" ConfigName="Release"/>
       <Project Name="DeferredRendering" ConfigName="Release"/>
+      <Project Name="Prova" ConfigName="Release"/>
+      <Project Name="FeeFeed" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>

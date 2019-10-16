@@ -68,7 +68,7 @@ public:
     GLuint VAO;
     
     GLint inputAttrib;
-    bool feedback = false;
+    bool feedback;
 
     //////////////////////////////////////////
     // Constructor
@@ -78,7 +78,12 @@ public:
         this->indices = indices;
         this->textures = textures;
         this->feedback = feedback;
-
+        
+        if (feedback)
+            printf("Feedback MESH\n");
+        else
+            printf("NoFeedback MESH\n");
+        
         // initialization of OpenGL buffers
         this->setupMesh();
     }
@@ -88,37 +93,134 @@ public:
     // rendering of mesh
     void Draw(Shader shader)
     {
-        if (shader.feedback)
+        if (feedback)
         {
-            inputAttrib = glGetAttribLocation(shader.ID, "position");
+            // VAO is made "active"
+//            glBindVertexArray(this->VAO);
+//            // we copy data in the VBO - we must set the data dimension, and the pointer to the structure cointaining the data
+//            glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
+//            glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), &this->vertices[0], GL_STATIC_DRAW);
+//
+//            glBindBuffer(GL_ARRAY_BUFFER, this->TBO);
+//            glBufferData(GL_ARRAY_BUFFER, this->vertices.size(), nullptr, GL_STATIC_READ);
+//
+//            // we copy data in the EBO - we must set the data dimension, and the pointer to the structure cointaining the data
+//            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
+//            glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), &this->indices[0], GL_STATIC_DRAW);
+//
+//            // we set in the VAO the pointers to the different vertex attributes (with the relative offsets inside the data structure)
+//            // vertex positions
+//            glEnableVertexAttribArray(0);
+//            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
+//            // Normals
+//            glEnableVertexAttribArray(1);
+//            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Normal));
+//            // Texture Coordinates
+//            glEnableVertexAttribArray(2);
+//            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, TexCoords));
+//            // Tangent
+//            glEnableVertexAttribArray(3);
+//            glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Tangent));
+//            // Bitangent
+//            glEnableVertexAttribArray(4);
+//            glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)offsetof(Vertex, Bitangent));
+
+            GLuint vao;
+            glGenVertexArrays(1, &vao);
+            glBindVertexArray(vao);
+
+            GLuint vbo;
+            GLuint tbo;
+
+            glm::vec3 data[vertices.size()];
+            for(int i=0; i<vertices.size(); i++)
+                data[i] = vertices[i].Position;
+                
+            glGenBuffers(1, &vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+
+            GLint inputAttrib = glGetAttribLocation(shader.ID, "inValue");
             glEnableVertexAttribArray(inputAttrib);
             glVertexAttribPointer(inputAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
-            
+
+            // Create transform feedback buffer
+            glGenBuffers(1, &tbo);
+            glBindBuffer(GL_ARRAY_BUFFER, tbo);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_STATIC_READ);
+
             // Perform feedback transform
             glEnable(GL_RASTERIZER_DISCARD);
 
-            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, TBO);
+            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tbo);
 
             glBeginTransformFeedback(GL_POINTS);
-                glDrawArrays(GL_POINTS, 0, vertices.size());
+            glDrawArrays(GL_POINTS, 0, sizeof(data));
             glEndTransformFeedback();
 
             glDisable(GL_RASTERIZER_DISCARD);
 
             glFlush();
-            
+
             // Fetch and print results
-            glm::vec3 feedback[vertices.size()];
-            glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(feedback), feedback);
+            glm::vec3 feed[sizeof(data)];
+            glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(feed), feed);
+
+//            printf("%f %f %f %f %f %f\n", feed[0].x, feed[0].y, feed[0].z, feed[1].x, feed[1].y, feed[1].z);
+
+            int size = sizeof(data)/sizeof(data[0]);
+
+//            for (int i = 0; i<size; i++)
+//            {
+//                data[i] = feed[i];
+//            }
+
+            // Perform feedback transform
+//            glEnable(GL_RASTERIZER_DISCARD);
+//
+//            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, TBO);
+//
+//            glBeginTransformFeedback(GL_POINTS);
+//                glDrawArrays(GL_POINTS, 0, this->vertices.size());
+//            glEndTransformFeedback();
+//
+//            glDisable(GL_RASTERIZER_DISCARD);
+//
+//            glFlush();
+//            
+//            // Fetch and print results
+//            glm::vec3 feed[vertices.size()];
+//            glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(feed), feed);
+//            
+//            int size = sizeof(feed)/sizeof(feed[0]);
+//            
+////            printf("%f %f %f %f %f %f\n", feedback[0].x, feedback[0].y, feedback[0].z, feedback[1].x, feedback[1].y, feedback[1].z);
+//            
+////            printf("HIT\n");
+//            
+//            for (int i = 0; i<size; i++)
+//            {
+//                printf("PRIMA: %f %f %f\n", vertices[i].Position.x, vertices[i].Position.y, vertices[i].Position.z);
+////                vertices[i].Position = feedback[i];
+////                printf("DOPO: %f %f %f\n", vertices[i].Position.x, vertices[i].Position.y, vertices[i].Position.z);
+//                printf("DOPO: %f %f %f\n", feed[i].x, feed[i].y, feed[i].z);
+//            }
             
-            int size = sizeof(feedback)/sizeof(feedback[0]);
-            
-//            printf("HIT\n");
-            
-            for (int i = 0; i<size; i++)
-            {
-                vertices[i].Position = feedback[i];
-            }
+//            setupMesh();
+
+//            // VAO is made "active"
+//            glBindVertexArray(this->VAO);
+//            // rendering of data in the VAO
+//            glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
+//            // VAO is "detached"
+//            glBindVertexArray(0);
+//
+//            // Always good practice to set everything back to defaults once configured.
+//            for (GLuint i = 0; i < this->textures.size(); i++)
+//            {
+//                glActiveTexture(GL_TEXTURE0 + i);
+//                glBindTexture(GL_TEXTURE_2D, 0);
+//            }
         }
         else
         {
@@ -177,7 +279,7 @@ public:
 
 private:
   // VBO and EBO
-  GLuint VBO, EBO;
+  GLuint vbo, VBO, EBO;
   GLuint TBO;
 
   //////////////////////////////////////////
@@ -208,7 +310,7 @@ private:
       if (feedback)
       {
           glBindBuffer(GL_ARRAY_BUFFER, this->TBO);
-          glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(vertices[0].Position), nullptr, GL_STATIC_READ);
+          glBufferData(GL_ARRAY_BUFFER, this->vertices.size(), nullptr, GL_STATIC_READ);
       }
       
       // we copy data in the EBO - we must set the data dimension, and the pointer to the structure cointaining the data

@@ -37,6 +37,9 @@ unsigned int loadTexture(const char *path);
 const unsigned int SCR_WIDTH = 1366;
 const unsigned int SCR_HEIGHT = 768;
 
+const unsigned int TEXTURE_WIDTH = 1024;
+const unsigned int TEXTURE_HEIGHT = 1024;
+
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 GLfloat lastX = SCR_WIDTH / 2.0;
@@ -207,10 +210,11 @@ int main()
     Shader object_shader("Feedback\\shaders\\13_phong.vert", "Feedback\\shaders\\14_ggx.frag");
     Shader deformShader("Feedback\\shaders\\shaderNM.VERT", "Feedback\\shaders\\shaderNM.FRAG");
     Shader updateDisplacementShader("Feedback\\shaders\\shaderNMDisplacement.VERT", "Feedback\\shaders\\shaderNMDisplacement.FRAG");
+    Shader simpleShader("Feedback\\shaders\\simpleShader.VERT", "Feedback\\shaders\\simpleShader.FRAG");
 
     // load models
     // -----------
-    Model cubeModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube\\cube.obj");
+    Model cubeModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj");
     Model sphereModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj");
     
 //    cubeModel->setFeedback(true);
@@ -238,23 +242,34 @@ int main()
     
     // load textures (we now use a utility function to keep the code more organized)
     // -----------------------------------------------------------------------------
-    unsigned int normalMap = loadTexture("\\models\\cube\\texture_normal1.png");
-    unsigned int displacementMap = loadTexture("\\models\\cube\\texture_displacement1.png");
+    unsigned int normalMap = loadTexture("\\models\\cube2\\normalMap.png");
+    unsigned int displacementMap = loadTexture("\\models\\cube2\\displacementMap2.png");
+    
+    // load textures
+    // -------------
+    unsigned int cubeTexture = loadTexture("work\\Prova\\textures\\marble.jpg");
+//    unsigned int cubeTexture = loadTexture("textures\\cube\\uffizi\\negz.png");
+    unsigned int floorTexture = loadTexture("work\\Prova\\textures\\metal.png");
     
     // framebuffer configuration
     // -------------------------
-    unsigned int framebufferD;
-    glGenFramebuffers(1, &framebufferD);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferD);
+    unsigned int framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     // create a color attachment texture
-//    unsigned int textureColorbuffer;
-    glGenTextures(1, &displacementMap);
-    glBindTexture(GL_TEXTURE_2D, displacementMap);
+    unsigned int textureColorbuffer;
+    glGenTextures(1, &textureColorbuffer);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, displacementMap, 0);
-
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 1024, 1024); // use a single renderbuffer object for both a depth AND stencil buffer.
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // now actually attach it
     // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
@@ -293,8 +308,6 @@ int main()
 
         // render
         // ------
-        glClearColor(0.0f, 0.0f, 0.4f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // we set the rendering mode
         if (wireframe)
@@ -312,21 +325,20 @@ int main()
         checkCollisions();
         
         // 2 - If there are new collision points, pre-render the deformable objects and update their displacement and normal maps
+        // RENDER TO FRAMEBUFFER (TEXTURES)
         
         if (hit || first)
         {
             if (first)
                 first = false;
+             
             // bind to framebuffer and draw scene as we normally would to color texture 
-//            glViewport(0, 0, 1024, 1024);
-            glBindFramebuffer(GL_FRAMEBUFFER, framebufferD);
-                // bind maps
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, displacementMap);
-            glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
-
+            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+            glViewport(0, 0, 1024, 1024);
+//            glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
+            glDisable(GL_DEPTH_TEST);
             // make sure we clear the framebuffer's content
-            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            glClearColor(0.0f, 0.5f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
             ///// Update the deformable objects
@@ -345,44 +357,23 @@ int main()
 
             int num_cobjs = bulletSimulation.dynamicsWorld->getNumCollisionObjects();
 
-            for(int i = 1; i < num_cobjs; i++ )
+            for(int i = 1; i <= total_cubes; i++ )
             {
-                if (i <= total_cubes)
-                {
-                    if (i < 3)
-                        objectModel = &cubeModel;
-                    else
-                        objectModel = &sphereModel;
-                    objectShader = &updateDisplacementShader;
-                    obj_size = cube_size;
-                    glUniform3fv(objDiffuseLocation, 1, diffuseColor);
-                }
+                if (i < 3)
+                    objectModel = &cubeModel;
                 else
-                {
                     objectModel = &sphereModel;
-                    objectShader = &object_shader;
-                    obj_size = sphere_size;
-                    glUniform3fv(objDiffuseLocation, 1, shootColor);
-                    
-        //                glm::vec4 sphereDirection = lastSpherePosition - spherePosition;
-                }
+                objectShader = &updateDisplacementShader;
+                obj_size = cube_size;
                 
                 objectShader->use();
-                
-                // we pass projection and view matrices to the Shader Program
-                glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-                glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
-            
+
                 btCollisionObject* obj = bulletSimulation.dynamicsWorld->getCollisionObjectArray()[i];
                 btRigidBody* body = btRigidBody::upcast(obj);
                 body->getMotionState()->getWorldTransform(transform);
                 transform.getOpenGLMatrix(matrix);
                 
                 objModelMatrix = glm::make_mat4(matrix)*glm::scale(objModelMatrix, obj_size);
-                objNormalMatrix = glm::inverseTranspose(glm::mat3(view*objModelMatrix));
-                
-                glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "model"), 1, GL_FALSE, glm::value_ptr(objModelMatrix));
-        //            glUniformMatrix3fv(glGetUniformLocation(objectShader->ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(objNormalMatrix));
             
                 if (index_vtd + 1 < 599 && (contactPoint1.x != 0.0f && contactPoint1.y != 0.0f && contactPoint1.z != 0.0f))
                 {
@@ -404,99 +395,34 @@ int main()
                 // renderizza il modello
                 if (objectShader == &updateDisplacementShader)
                 {
-    //                glUniform3fv(glGetUniformLocation(objectShader->ID, "impactPoints"), 600, glm::value_ptr(verticesToDeform[0]));
-    //                glUniform3fv(glGetUniformLocation(objectShader->ID, "hittingDirections"), 600, glm::value_ptr(hittingDirections[0]));
                     glUniform3fv(objDiffuseLocation, 1, diffuseColor);
-                    
                     objectShader->setVec3("viewPos", camera.Position);
-                    
-                    // Setting Material Properties
-                    objectShader->setFloat("materialShininess", 32.0f);
-                    
-                    // directional light
-                    objectShader->setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-                    objectShader->setVec3("dirLight.ambient", 0.1f, 0.1f, 0.1f);
-                    objectShader->setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
-                    objectShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-                    objectShader->setBool("dirLight.on", dirlightOn);
-                    // point light 1
-                    objectShader->setBool("pointLights[0].on", pointlightsOn);
-                    objectShader->setVec3("pointLights[0].position", pointLightPositions[0]);
-                    objectShader->setVec3("pointLights[0].ambient", pointLightColors[0] * 0.1f);
-                    objectShader->setVec3("pointLights[0].diffuse", pointLightColors[0]);
-                    objectShader->setVec3("pointLights[0].specular", pointLightColors[0]);
-                    objectShader->setFloat("pointLights[0].constant", 1.0f);
-                    objectShader->setFloat("pointLights[0].linear", 0.14f);
-                    objectShader->setFloat("pointLights[0].quadratic", 0.07f);
-                    // point light 2
-                    objectShader->setBool("pointLights[1].on", pointlightsOn);
-                    objectShader->setVec3("pointLights[1].position", pointLightPositions[1]);
-                    objectShader->setVec3("pointLights[1].ambient", pointLightColors[1] * 0.1f);
-                    objectShader->setVec3("pointLights[1].diffuse", pointLightColors[1]);
-                    objectShader->setVec3("pointLights[1].specular", pointLightColors[1]);
-                    objectShader->setFloat("pointLights[1].constant", 1.0f);
-                    objectShader->setFloat("pointLights[1].linear", 0.14f);
-                    objectShader->setFloat("pointLights[1].quadratic", 0.07f);
-                    // point light 3
-                    objectShader->setBool("pointLights[2].on", pointlightsOn);
-                    objectShader->setVec3("pointLights[2].position", pointLightPositions[2]);
-                    objectShader->setVec3("pointLights[2].ambient", pointLightColors[2] * 0.1f);
-                    objectShader->setVec3("pointLights[2].diffuse", pointLightColors[2]);
-                    objectShader->setVec3("pointLights[2].specular", pointLightColors[2]);
-                    objectShader->setFloat("pointLights[2].constant", 1.0f);
-                    objectShader->setFloat("pointLights[2].linear", 0.22f);
-                    objectShader->setFloat("pointLights[2].quadratic", 0.20f);
-                    // point light 4
-                    objectShader->setBool("pointLights[3].on", pointlightsOn);
-                    objectShader->setVec3("pointLights[3].position", pointLightPositions[3]);
-                    objectShader->setVec3("pointLights[3].ambient", pointLightColors[3] * 0.1f);
-                    objectShader->setVec3("pointLights[3].diffuse", pointLightColors[3]);
-                    objectShader->setVec3("pointLights[3].specular", pointLightColors[3]);
-                    objectShader->setFloat("pointLights[3].constant", 1.0f);
-                    objectShader->setFloat("pointLights[3].linear", 0.14f);
-                    objectShader->setFloat("pointLights[3].quadratic", 0.07f);
-                    // spotLight
-                    objectShader->setBool("spotLight.on", flashlightOn);
-                    objectShader->setVec3("spotLight.position", camera.Position);
-                    objectShader->setVec3("spotLight.direction", camera.Front);
-                    objectShader->setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-                    objectShader->setVec3("spotLight.diffuse", 0.7f, 0.7f, 0.7f);
-                    objectShader->setVec3("spotLight.specular", 0.9f, 0.9f, 0.9f);
-                    objectShader->setFloat("spotLight.constant", 1.0f);
-                    objectShader->setFloat("spotLight.linear", 0.09f);
-                    objectShader->setFloat("spotLight.quadratic", 0.032f);
-                    objectShader->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-                    objectShader->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+                    objectShader->setMat4("model", objModelMatrix);
+                    objectShader->setMat4("projection", projection);
+                    objectShader->setMat4("view", view);
                 }
-                else
-                {
-                    glUniform3fv(objDiffuseLocation, 1, shootColor);
-                    glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(objModelMatrix));
-                    glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projection));
-                    glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "viewMatrix   "), 1, GL_FALSE, glm::value_ptr(view));
-                    glUniformMatrix3fv(glGetUniformLocation(objectShader->ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(objNormalMatrix));
-                }
+
                 objectModel->Draw(*objectShader);
                 objModelMatrix = glm::mat4(1.0f);
             }
+            
         }
         
         // 3 - Render the whole scene (including the deformable objects, this time by using the updated displacement and normal maps).
+        // Bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
         
 //        renderScene();
         
         //////////////////////////    RENDER SCENE    //////////////////////////
         
-        // bind maps
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, displacementMap);
-        
         // now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
+        
         // clear all relevant buffers
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f); 
-        glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.0f, 0.0f, 0.4f, 1.0f); 
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // We "install" the selected Shader Program as part of the current rendering process
         object_shader.use();
@@ -569,8 +495,6 @@ int main()
                 objectShader = &object_shader;
                 obj_size = sphere_size;
                 glUniform3fv(objDiffuseLocation, 1, shootColor);
-                
-    //                glm::vec4 sphereDirection = lastSpherePosition - spherePosition;
             }
             
             objectShader->use();
@@ -588,7 +512,6 @@ int main()
             objNormalMatrix = glm::inverseTranspose(glm::mat3(view*objModelMatrix));
             
             glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "model"), 1, GL_FALSE, glm::value_ptr(objModelMatrix));
-    //            glUniformMatrix3fv(glGetUniformLocation(objectShader->ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(objNormalMatrix));
         
             if (index_vtd + 1 < 599 && (contactPoint1.x != 0.0f && contactPoint1.y != 0.0f && contactPoint1.z != 0.0f))
             {
@@ -673,8 +596,6 @@ int main()
                 objectShader->setFloat("spotLight.quadratic", 0.032f);
                 objectShader->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
                 objectShader->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
-                // set the displacement map
-                objectShader->setInt("displacementMap", 0);
             }
             else
             {
@@ -684,9 +605,26 @@ int main()
                 glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "viewMatrix   "), 1, GL_FALSE, glm::value_ptr(view));
                 glUniformMatrix3fv(glGetUniformLocation(objectShader->ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(objNormalMatrix));
             }
+            // bind maps
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+            objectShader->setInt("displacementMap", 1);
             objectModel->Draw(*objectShader);
             objModelMatrix = glm::mat4(1.0f);
         }
+        
+//        glm::mat4 model = glm::mat4(1.0f);
+//        model = glm::translate(model, glm::vec3(2, 2, 2));
+//        model = glm::scale(model, glm::vec3(2)); // Make it a smaller cube
+        
+//        simpleShader.use();
+//        simpleShader.setMat4("model", model);
+//        simpleShader.setMat4("projection", projection);
+//        simpleShader.setMat4("view", view);
+//        simpleShader.setInt("texture1", 1);
+//        glActiveTexture(GL_TEXTURE1);
+//        glBindTexture(GL_TEXTURE_2D, normalMap);
+//        cubeModel.Draw(simpleShader);
         
 //        renderScene(object_shader, deformShader, feedbackShader, cubeModel, sphereModel);
 
@@ -889,8 +827,10 @@ float getDistance(glm::vec3 point1, glm::vec3 point2)
     return sqrt( pow(point1.x - point2.x, 2) + pow(point1.y - point2.y, 2) + pow(point1.z - point2.z, 2) );
 }
 
-void checkCollisions()
+glm::vec3 checkCollisions()
 {
+    glm::vec3 hitPoint = glm::vec3(0);
+    
     // GET COLLISIONS POINTS
     bulletSimulation.dynamicsWorld->debugDrawWorld();
     ///one way to draw all the contact points is iterating over contact manifolds in the dispatcher:
@@ -921,6 +861,7 @@ void checkCollisions()
 //                    printf("WORLD POINT B: %lf %lf %lf\n", ptB.x(),ptB.y(),ptB.z());
                 
                 contactPoint1 = glm::vec3(ptA.x(), ptA.y(), ptA.z());
+                hitPoint = glm::vec3(ptA.x(), ptA.y(), ptA.z());
                 contactPoint2 = glm::vec3(ptA.x(), ptA.y(), ptA.z());
                 distance = pt.getDistance();
             }
@@ -947,6 +888,8 @@ void checkCollisions()
     {
         index_vtd = 0;
     }
+    
+    return hitPoint;
 }
 
 // utility function for loading a 2D texture from file
