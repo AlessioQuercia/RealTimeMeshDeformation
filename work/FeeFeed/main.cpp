@@ -289,8 +289,11 @@ int main()
     
     // load textures
     // -------------
-    unsigned int cubeTexture = loadTexture("work\\Prova\\textures\\marble.jpg");
-//    unsigned int cubeTexture = loadTexture("textures\\cube\\uffizi\\negz.png");
+//    unsigned int cubeTexture = loadTexture("work\\Prova\\textures\\marble.jpg");
+//    unsigned int cubeTexture = loadTexture("textures\\high\\1.jpg");
+    unsigned int cubeTexture = loadTexture("textures\\high\\uniform4dddk.jpg");
+//    unsigned int cubeTexture = loadTexture("textures\\high\\3.jpg");
+//    unsigned int cubeTexture = loadTexture("textures\\high\\4.jpg");
     unsigned int floorTexture = loadTexture("work\\Prova\\textures\\metal.png");
     
     // framebuffer configuration

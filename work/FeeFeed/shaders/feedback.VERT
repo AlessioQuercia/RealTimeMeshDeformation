@@ -17,9 +17,13 @@ out vec3 Normal;
 out vec3 outValue;
 out vec3 outValue2;
 
+// const float range = 0.5f;
+// const float power = 0.55f;
+// const float max_magnitude = 0.9f;
+
 const float range = 0.5f;
-const float power = 0.55f;
-const float max_magnitude = 0.9f;
+const float power = 0.02f;
+const float max_magnitude = 0.2f;
 
 vec4 explode(vec4 position, vec3 direction, vec3 normal, float magnitude)
 {

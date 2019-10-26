@@ -1,33 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Session Name="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\LezioniRTGP_win.workspace">
-  <int Value="3" Name="m_selectedTab"/>
+  <int Value="0" Name="m_selectedTab"/>
   <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\LezioniRTGP_win.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
-      <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\work\work06\work06b.cpp" Name="FileName"/>
-      <int Value="18" Name="FirstVisibleLine"/>
-      <int Value="35" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\work\advanced\main.cpp" Name="FileName"/>
-      <int Value="0" Name="FirstVisibleLine"/>
-      <int Value="0" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\work\geometry\main.cpp" Name="FileName"/>
-      <int Value="0" Name="FirstVisibleLine"/>
-      <int Value="6" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\include\utils\physics.h" Name="FileName"/>
-      <int Value="158" Name="FirstVisibleLine"/>
-      <int Value="168" Name="CurrentLine"/>
+      <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\work\FeeFeed\main.cpp" Name="FileName"/>
+      <int Value="251" Name="FirstVisibleLine"/>
+      <int Value="269" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
