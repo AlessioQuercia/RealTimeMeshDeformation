@@ -22,6 +22,21 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image/stb_image.h>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+
+struct Character {
+    GLuint     TextureID;  // ID handle of the glyph texture
+    glm::ivec2 Size;       // Size of glyph
+    glm::ivec2 Bearing;    // Offset from baseline to left/top of glyph
+    GLuint     Advance;    // Offset to advance to next glyph
+};
+
+std::map<GLchar, Character> Characters;
+GLuint VAO, VBO;
+void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -97,10 +112,10 @@ glm::vec3 pointLightPositions[] = {
 };
 
 glm::vec3 pointLightColors[] = {
-    glm::vec3(0.99f, 0.99f, 0.99f),
-    glm::vec3(0.99f, 0.99f, 0.99f),
-    glm::vec3(0.99f, 0.99f, 0.99f),
-    glm::vec3(0.99f, 0.99f, 0.99f)
+    glm::vec3(0.7f, 0.7f, 0.7f),
+    glm::vec3(0.7f, 0.7f, 0.7f),
+    glm::vec3(0.7f, 0.7f, 0.7f),
+    glm::vec3(0.7f, 0.7f, 0.7f)
 };
 
 bool dirlightOn;
@@ -128,7 +143,8 @@ GLint total_cubes = num_side*num_side;
 
 glm::vec3 cube_pos;
 
-vector<glm::vec3> positions;
+//vector<glm::vec3> directions;
+//vector<glm::vec3> positions;
 // dimension of the cube
 glm::vec3 cube_size = glm::vec3(2.5f, 2.5f, 2.5f);
 // we set a small initial rotation for the cubes
@@ -208,6 +224,88 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+    
+    ///////////////// TEXTS ////////////////
+    
+    // Set OpenGL options
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Compile and setup the shader
+    Shader shader("FeeFeed\\shaders\\text.VERT", "FeeFeed\\shaders\\text.FRAG");
+    glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(SCR_WIDTH), 0.0f, static_cast<GLfloat>(SCR_HEIGHT));
+    shader.use();
+    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    
+    FT_Library ft;
+    if (FT_Init_FreeType(&ft))
+        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+
+    FT_Face face;
+    if (FT_New_Face(ft, "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\fonts\\segoepr.ttf", 0, &face))
+        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl; 
+        
+    FT_Set_Pixel_Sizes(face, 0, 48);  
+    
+    if (FT_Load_Char(face, 'X', FT_LOAD_RENDER))
+        std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl; 
+
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
+      
+    for (GLubyte c = 0; c < 128; c++)
+    {
+        // Load character glyph 
+        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+        {
+            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+            continue;
+        }
+        // Generate texture
+        GLuint texture;
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            face->glyph->bitmap.width,
+            face->glyph->bitmap.rows,
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            face->glyph->bitmap.buffer
+        );
+        // Set texture options
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // Now store character for later use
+        Character character = {
+            texture, 
+            glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+            glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+            face->glyph->advance.x
+        };
+        Characters.insert(std::pair<GLchar, Character>(c, character));
+    }
+    
+    FT_Done_Face(face);
+    FT_Done_FreeType(ft);
+    
+    // Configure VAO/VBO for texture quads
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
     
     // Initialize verticesToDeform
     for (int i = 0; i<100; i++)
@@ -290,8 +388,8 @@ int main()
     // load textures
     // -------------
 //    unsigned int cubeTexture = loadTexture("work\\Prova\\textures\\marble.jpg");
+    unsigned int cubeTexture = loadTexture("textures\\high\\4k.jpg");
 //    unsigned int cubeTexture = loadTexture("textures\\high\\1.jpg");
-    unsigned int cubeTexture = loadTexture("textures\\high\\uniform4k.jpg");
 //    unsigned int cubeTexture = loadTexture("textures\\high\\3.jpg");
 //    unsigned int cubeTexture = loadTexture("textures\\high\\4.jpg");
     unsigned int floorTexture = loadTexture("work\\Prova\\textures\\metal.png");
@@ -347,6 +445,13 @@ int main()
     glGenBuffers(1, &vbo);
     glGenBuffers(1, &tbo);
     
+    char fps[100];
+    char* fps_text = "FPS: ";
+    std::string fps_num;
+    
+    double startTime = glfwGetTime();
+    int nbFrames = 0;
+    
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -367,6 +472,22 @@ int main()
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+        
+        double currentTime = glfwGetTime();
+        nbFrames++;
+        
+//        cout<<(currentTime - startTime)<<endl;
+        
+        if (currentTime - startTime >= 1.0)
+        {
+//            printf("%f ms/frame\n", 1000.0/double(nbFrames));
+//            sprintf(fps_num, "%d", nbFrames);
+            fps_num = std::to_string(nbFrames);
+            startTime = glfwGetTime();
+            nbFrames = 0;
+        }
+        
+//        cout<<fps_num<<endl;
 
         // input
         // -----
@@ -398,7 +519,7 @@ int main()
         
         // 2 - Update the vertices by capturing them as feedback
         
-        if (hit || first)
+        if (hit)
         {
             if (first)
                 first = false;
@@ -479,26 +600,22 @@ int main()
     //                printf("FEED: %f %f %f\n", feedback[j].x, feedback[j].y, feedback[j].z);
     //                printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
 
-    //                printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
-    //                printf("FEED1: %f %f %f\n", feedback[i].x, feedback[i].y, feedback[i].z);
-    //                printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
-    //                printf("FEED2: %f %f %f\n", feedback[i+1].x, feedback[i+1].y, feedback[i+1].z);
+//                    printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
+//                    printf("FEED1: %f %f %f\n", feedback[i].x, feedback[i].y, feedback[i].z);
+//                    printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
+//                    printf("FEED2: %f %f %f\n", feedback[i+1].x, feedback[i+1].y, feedback[i+1].z);
 
-    //                if(feedback[j].x < 1)
-    //                {
-    //                    printf("CIAO\n");
-    //                }
-    //                if (data[i].x != feedback[j].x || data[i].y != feedback[j].y || data[i].z != feedback[j].z)
-    //                {
-    //                    printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
-    //                    printf("FEED: %f %f %f\n", feedback[j].x, feedback[j].y, feedback[j].z);
-    //                }
+//                    if (data[i].x != feedback[j].x || data[i].y != feedback[j].y || data[i].z != feedback[j].z)
+//                    {
+//                        printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
+//                        printf("FEED: %f %f %f\n", feedback[j].x, feedback[j].y, feedback[j].z);
+//                    }
 
-    //                if (data[i+1].x != feedback[i+1].x || data[i+1].y != feedback[i+1].y || data[i+1].z != feedback[i+1].z)
-    //                {
-    //                    printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
-    //                    printf("FEED2: %f %f %f\n", feedback[i+1].x, feedback[i+1].y, feedback[i+1].z);
-    //                }
+//                    if (data[i+1].x != feedback[i+1].x || data[i+1].y != feedback[i+1].y || data[i+1].z != feedback[i+1].z)
+//                    {
+//                        printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
+//                        printf("FEED2: %f %f %f\n", feedback[i+1].x, feedback[i+1].y, feedback[i+1].z);
+//                    }
                     
                     data[i] = feedback[i];
                 }
@@ -517,7 +634,7 @@ int main()
         glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for rendering screen-space quad)
         
         // clear all relevant buffers
-        glClearColor(0.0f, 0.0f, 0.7f, 1.0f); 
+        glClearColor(0.0f, 0.0f, 0.4f, 1.0f); 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         // We "install" the selected Shader Program as part of the current rendering process
@@ -582,7 +699,7 @@ int main()
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, cubeTexture);
             deformShader.setInt("texture1", 1);
-                
+
             deformShader.setVec3("viewPos", camera.Position);
             
             // Setting Material Properties
@@ -648,6 +765,7 @@ int main()
 
 
         int num_cobjs = bulletSimulation.dynamicsWorld->getNumCollisionObjects();
+        int ind = 0;
 
         for(int i = 1; i < num_cobjs; i++ )
         {
@@ -676,6 +794,9 @@ int main()
             
             objModelMatrix = glm::make_mat4(matrix)*glm::scale(objModelMatrix, obj_size);
             objNormalMatrix = glm::inverseTranspose(glm::mat3(view*objModelMatrix));
+            
+//            glm::vec3 position = glm::vec3(objModelMatrix[3][0], objModelMatrix[3][1], objModelMatrix[3][2]);
+//            directions[ind] = positions[ind++] - position;
             
             glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "model"), 1, GL_FALSE, glm::value_ptr(objModelMatrix));
             glUniform3fv(objDiffuseLocation, 1, shootColor);
@@ -718,6 +839,9 @@ int main()
             shoot.z = 1.0f;
             shoot.w = 1.0f;
             
+//            directions.push_back(camera.Front);
+//            positions.push_back(camera.Position);
+            
             unproject = glm::inverse(projection*view);
             shoot = glm::normalize(unproject*shoot) * shootInitialSpeed;
             
@@ -726,6 +850,12 @@ int main()
         }
         
         hit = false;
+        
+        strcpy(fps, fps_text);
+        strcat(fps, fps_num.c_str());
+        
+        ///////////// DRAW FPS /////////////
+        RenderText(shader, fps, SCR_WIDTH-100, SCR_HEIGHT-50, 0.3f, glm::vec3(0.0f, 1.0f, 0.0f));
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -1010,4 +1140,51 @@ unsigned int loadTexture(char const * imagePath)
     }
 
     return textureID;
+}
+
+
+void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
+{
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // Activate corresponding render state	
+    shader.use();
+    glUniform3f(glGetUniformLocation(shader.ID, "textColor"), color.x, color.y, color.z);
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(VAO);
+
+    // Iterate through all characters
+    std::string::const_iterator c;
+    for (c = text.begin(); c != text.end(); c++) 
+    {
+        Character ch = Characters[*c];
+
+        GLfloat xpos = x + ch.Bearing.x * scale;
+        GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+
+        GLfloat w = ch.Size.x * scale;
+        GLfloat h = ch.Size.y * scale;
+        // Update VBO for each character
+        GLfloat vertices[6][4] = {
+            { xpos,     ypos + h,   0.0, 0.0 },            
+            { xpos,     ypos,       0.0, 1.0 },
+            { xpos + w, ypos,       1.0, 1.0 },
+
+            { xpos,     ypos + h,   0.0, 0.0 },
+            { xpos + w, ypos,       1.0, 1.0 },
+            { xpos + w, ypos + h,   1.0, 0.0 }           
+        };
+        // Render glyph texture over quad
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+        // Update content of VBO memory
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // Be sure to use glBufferSubData and not glBufferData
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // Render quad
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+        x += (ch.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+    }
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

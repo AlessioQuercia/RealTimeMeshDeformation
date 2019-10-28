@@ -36,6 +36,7 @@
         <Library Value="Bullet3Dynamics"/>
         <Library Value="Bullet3Collision"/>
         <Library Value="LinearMath"/>
+        <Library Value="freetype"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
       <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>

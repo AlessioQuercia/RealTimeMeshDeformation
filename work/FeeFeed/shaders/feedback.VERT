@@ -22,16 +22,17 @@ out vec3 outValue2;
 // const float max_magnitude = 0.9f;
 
 const float range = 0.5f;
-const float power = 0.02f;
-const float max_magnitude = 0.2f;
+const float power = 0.05f;
+const float max_magnitude = 0.3f;
 
 vec4 explode(vec4 position, vec3 direction, vec3 normal, float magnitude)
 {
     direction = direction * magnitude;
     // Normal = mat3(transpose(inverse(model))) * -normalize(normal + direction);
+    // Normal = -normalize(normal + direction);
     vec4 newPosition = position + vec4(direction, 0.0);
-    vec4 focus = position + vec4(direction/2, 0.0);
-    Normal = normalize(hitPoint - focus.xyz);
+    // vec4 focus = position + vec4(direction/2, 0.0);
+    // Normal = normalize(hitPoint - focus.xyz);
     return newPosition;
 }
 
@@ -44,8 +45,6 @@ void main()
 {
 	FragPos = model * vec4(position, 1.0);
 
-    Normal = normal;
-
 	float distance = getDistance(hitPoint, FragPos.xyz);
 
 	if (distance < range)
@@ -54,10 +53,13 @@ void main()
 		magnitude = min(magnitude, max_magnitude);
 		FragPos = explode(FragPos, hitDirection, -normal, magnitude);
 		FragPos = inverse(model) * FragPos;
+		// FragPos = vec4(0);
+		Normal = normalize(normal + hitDirection*magnitude);
 	}
 	else
 	{
 		FragPos = vec4(position, 1.0);
+	    Normal = normal;
 	}
 
     outValue = FragPos.xyz;

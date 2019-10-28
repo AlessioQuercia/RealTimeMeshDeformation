@@ -82,8 +82,9 @@ void main()
     vec3 norm = normalize(Normal);  
 
     // properties
-    vec3 viewDir = normalize(viewPosition - FragPos.xyz);
+    vec3 viewDir = normalize(viewPos - FragPos.xyz);
     vec3 result = texture(texture1, TexCoords).xyz; //vec3(0.1f);
+    // vec3 result = vec3(0.1f, 0.1f, 0.1f);                           
     // phase 1: Directional lighting
     if (dirLight.on)
         result += CalcDirLight(dirLight, norm, viewDir);
@@ -178,7 +179,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 norm, vec3 fragPos, vec3 viewDir)
 	    specular *= intensity;
 
         // ambient  *= attenuation; // remove attenuation from ambient, as otherwise at large distances the light would be darker inside than outside the spotlight due the ambient term in the else branche
-        diffuse   *= attenuation;
+        diffuse  *= attenuation;
         specular *= attenuation;   
 
 	    result = ambient + diffuse + specular;

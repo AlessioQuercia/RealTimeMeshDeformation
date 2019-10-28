@@ -98,8 +98,13 @@ public:
         {
             for (int j = 0; j<meshes[i].vertices.size(); j++)
             {
-                meshes[i].vertices[j].Position = data[cnt++];
-                meshes[i].vertices[j].Normal = data[cnt++];
+                meshes[i].vertices[j].Position = data[cnt];
+//                printf("VERT: %f %f %f\n", data[cnt].x, data[cnt].y, data[cnt].z);
+                cnt += 1;
+//                printf("PRE-NORM: %f %f %f\n", meshes[i].vertices[j].Normal.x, meshes[i].vertices[j].Normal.y, meshes[i].vertices[j].Normal.z);
+                meshes[i].vertices[j].Normal = data[cnt];
+//                printf("NORM: %f %f %f\n", data[cnt].x, data[cnt].y, data[cnt].z);
+                cnt += 1;
             }
             meshes[i].UpdateMesh();
         }

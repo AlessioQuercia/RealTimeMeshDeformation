@@ -236,7 +236,15 @@ Debug/main.cpp.o: main.cpp ../../include/glad/glad.h \
  ../../include/bullet/BulletDynamics/Vehicle/btVehicleRaycaster.h \
  ../../include/bullet/BulletDynamics/Vehicle/btWheelInfo.h \
  ../../include/bullet/BulletDynamics/Dynamics/btActionInterface.h \
- ../../include/bullet/BulletDynamics/Dynamics/btRigidBody.h
+ ../../include/bullet/BulletDynamics/Dynamics/btRigidBody.h \
+ ../../include/ft2build.h ../../include/freetype/config/ftheader.h \
+ ../../include/freetype/freetype.h \
+ ../../include/freetype/config/ftconfig.h \
+ ../../include/freetype/config/ftoption.h \
+ ../../include/freetype/config/ftstdlib.h \
+ ../../include/freetype/fttypes.h ../../include/freetype/ftsystem.h \
+ ../../include/freetype/ftimage.h ../../include/freetype/fterrors.h \
+ ../../include/freetype/ftmoderr.h ../../include/freetype/fterrdef.h
 
 ../../include/glad/glad.h:
 
@@ -769,3 +777,27 @@ Debug/main.cpp.o: main.cpp ../../include/glad/glad.h \
 ../../include/bullet/BulletDynamics/Dynamics/btActionInterface.h:
 
 ../../include/bullet/BulletDynamics/Dynamics/btRigidBody.h:
+
+../../include/ft2build.h:
+
+../../include/freetype/config/ftheader.h:
+
+../../include/freetype/freetype.h:
+
+../../include/freetype/config/ftconfig.h:
+
+../../include/freetype/config/ftoption.h:
+
+../../include/freetype/config/ftstdlib.h:
+
+../../include/freetype/fttypes.h:
+
+../../include/freetype/ftsystem.h:
+
+../../include/freetype/ftimage.h:
+
+../../include/freetype/fterrors.h:
+
+../../include/freetype/ftmoderr.h:
+
+../../include/freetype/fterrdef.h:
