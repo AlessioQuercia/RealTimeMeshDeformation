@@ -716,7 +716,7 @@ int main()
             btRigidBody* sphere;
             glm::mat4 unproject;
             
-            sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, radius, rot, 1, 0.3f, 0.3f);
+            sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, sphere_size, rot, 1, 0.15f, 0.15f);
             shoot.x = camera.Front.x/SCR_WIDTH;
             shoot.y = camera.Front.y/SCR_HEIGHT;
             shoot.z = 1.0f;

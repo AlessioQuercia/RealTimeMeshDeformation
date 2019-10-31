@@ -98,13 +98,26 @@ public:
         {
             for (int j = 0; j<meshes[i].vertices.size(); j++)
             {
-                meshes[i].vertices[j].Position = data[cnt];
+                if (meshes[i].vertices[j].Position.x != data[cnt].x || 
+                    meshes[i].vertices[j].Position.y != data[cnt].y ||
+                    meshes[i].vertices[j].Position.z != data[cnt].z)
+                {
+//                    printf("PRE-NORM: %f %f %f\n", meshes[i].vertices[j].Position.x, meshes[i].vertices[j].Position.y, meshes[i].vertices[j].Position.z);
+//                    printf("NORM: %f %f %f\n", data[cnt].x, data[cnt].y, data[cnt].z);
+                    meshes[i].vertices[j].Position = data[cnt];
+                    cnt += 1;
+//                    printf("PRE-NORM: %f %f %f\n", meshes[i].vertices[j].Normal.x, meshes[i].vertices[j].Normal.y, meshes[i].vertices[j].Normal.z);
+//                    printf("NORM: %f %f %f\n", data[cnt].x, data[cnt].y, data[cnt].z);
+                    meshes[i].vertices[j].Normal = data[cnt];
+                    cnt += 1;
+                }
+                else
+                    cnt += 2;
 //                printf("VERT: %f %f %f\n", data[cnt].x, data[cnt].y, data[cnt].z);
-                cnt += 1;
+  
 //                printf("PRE-NORM: %f %f %f\n", meshes[i].vertices[j].Normal.x, meshes[i].vertices[j].Normal.y, meshes[i].vertices[j].Normal.z);
-                meshes[i].vertices[j].Normal = data[cnt];
 //                printf("NORM: %f %f %f\n", data[cnt].x, data[cnt].y, data[cnt].z);
-                cnt += 1;
+
             }
             meshes[i].UpdateMesh();
         }

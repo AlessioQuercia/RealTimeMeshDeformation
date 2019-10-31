@@ -48,6 +48,8 @@ float getDistance(glm::vec3 point1, glm::vec3 point2);
 glm::vec3 checkCollisions();
 void updateMeshes();
 unsigned int loadTexture(const char *path);
+int getHitModel(glm::vec3 hitPoint, glm::vec3* cubes_pos, glm::vec3* cubes_size);
+unsigned int loadCubemap(vector<std::string> faces);
 
 // settings
 const unsigned int SCR_WIDTH = 1366;
@@ -305,6 +307,63 @@ int main()
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    
+    
+        float skyboxVertices[] = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    }; 
+    
+    
+    // skybox VAO
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
     
     // Initialize verticesToDeform
@@ -326,6 +385,19 @@ int main()
     Shader simpleShader("Feedback\\shaders\\simpleShader.VERT", "Feedback\\shaders\\simpleShader.FRAG");    
 //    ShaderFee feedbackShader("FeeFeed\\shaders\\simpleFeed.VERT");
     ShaderFee feedbackShader("FeeFeed\\shaders\\feedback.VERT");
+    Shader skyboxShader("advanced\\shaders\\skybox.VERT", "advanced\\shaders\\skybox.FRAG");
+    
+    vector<std::string> faces
+    {
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\right.jpg",
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\left.jpg",
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\top.jpg",
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\bottom.jpg",
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\front.jpg",
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\back.jpg"
+    };
+    
+    unsigned int cubemapTexture = loadCubemap(faces);
 
     // load models
     // -----------
@@ -333,7 +405,7 @@ int main()
     Model planeModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj");
     Model sphereModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1);
     
-    Model cubes[total_cubes+1] = { 
+    Model cubes[total_cubes] = { 
                                 // ITEMS
                                 Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\highCube.obj"),
                                 Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\highCube.obj"),
@@ -341,16 +413,16 @@ int main()
                                 Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj"),
                                 Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj"),
                                 Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj"),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1)
+                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj", 1),
+                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj", 1),
+                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj", 1),
+                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj", 1),
+                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj", 1),
+                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\sphere.obj", 1),
+                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\sphere.obj", 1),
+                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\sphere.obj", 1),
+                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\sphere.obj", 1),
+                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\sphere.obj", 1)
                                 };
                        
     glm::vec3 cubes_pos[total_cubes];
@@ -392,7 +464,7 @@ int main()
 //    unsigned int cubeTexture = loadTexture("textures\\high\\1.jpg");
 //    unsigned int cubeTexture = loadTexture("textures\\high\\3.jpg");
 //    unsigned int cubeTexture = loadTexture("textures\\high\\4.jpg");
-    unsigned int floorTexture = loadTexture("work\\Prova\\textures\\metal.png");
+    unsigned int floorTexture = loadTexture("textures\\ground_mud.jpg");
     
     // framebuffer configuration
     // -------------------------
@@ -524,104 +596,109 @@ int main()
             if (first)
                 first = false;
             
-            for (int c = 0; c<total_cubes; c++)
-            {
-                int ind = 0;
-                int dim = 0;
-                
-                for (int i = 0; i<cubes[c].meshes.size(); i++)
-                    dim += cubes[c].meshes[i].vertices.size();
-
-                glm::vec3 data[dim*2];
-                
-                for (int i = 0; i<cubes[c].meshes.size(); i++)
-                {
-                    for(int j=0; j<cubes[c].meshes[i].vertices.size(); j++)
-                    {
-                        data[ind++] = glm::vec3(cubes[c].meshes[i].vertices[j].Position.x,
-                            cubes[c].meshes[i].vertices[j].Position.y, cubes[c].meshes[i].vertices[j].Position.z);
-                        data[ind++] = glm::vec3(cubes[c].meshes[i].vertices[j].Normal.x,
-                            cubes[c].meshes[i].vertices[j].Normal.y, cubes[c].meshes[i].vertices[j].Normal.z);
-                    }
-                }
+            int hitModel = getHitModel(hitPoint, cubes_pos, cubes_size);
+      
+            int ind = 0;
+            int dim = 0;
             
-                glm::mat4 model;
-                model = glm::translate(model, cubes_pos[c]);
-                model = glm::scale(model, cube_size);
-                    
-                glBindVertexArray(vao);
-                
-                feedbackShader.use();
-                feedbackShader.setMat4("model", model);
-                feedbackShader.setMat4("view", view);
-                feedbackShader.setMat4("projection", projection);
-                feedbackShader.setVec3("hitPoint", hitPoint);
-                feedbackShader.setVec3("hitDirection", camera.Front);
-                
-    //            printf("HITPOINT: %f %f %f\n", hitPoint.x, hitPoint.y, hitPoint.z);
-                        
-                glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+            for (int i = 0; i<cubes[hitModel].meshes.size(); i++)
+                dim += cubes[hitModel].meshes[i].vertices.size();
 
-                GLint inputAttrib = glGetAttribLocation(feedbackShader.ID, "position");
-                glEnableVertexAttribArray(inputAttrib);
-                glVertexAttribPointer(inputAttrib, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
-                GLint inputAttrib2 = glGetAttribLocation(feedbackShader.ID, "normal");
-                glEnableVertexAttribArray(inputAttrib2);
-                glVertexAttribPointer(inputAttrib2, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)(sizeof(glm::vec3)));
-                
-                glm::vec3 feedback[dim*2];
-
-                // Create transform feedback buffer
-                glBindBuffer(GL_ARRAY_BUFFER, tbo);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(feedback), nullptr, GL_STATIC_READ);
-
-                // Perform feedback transform
-                glEnable(GL_RASTERIZER_DISCARD);
-
-                glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tbo);
-
-                glBeginTransformFeedback(GL_POINTS);
-                    glDrawArrays(GL_POINTS, 0, sizeof(feedback));
-                glEndTransformFeedback();
-
-                glDisable(GL_RASTERIZER_DISCARD);
-
-                glFlush();
-
-                // Fetch and print results
-                glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(feedback), feedback);
-                
-                int j = 0;
-                for(int i = 0; i<dim*2; i+=2)
+            glm::vec3 data[dim*2];
+            
+            for (int i = 0; i<cubes[hitModel].meshes.size(); i++)
+            {
+                for(int j=0; j<cubes[hitModel].meshes[i].vertices.size(); j++)
                 {
-                    j = i/2;
-    //                printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
-    //                printf("FEED: %f %f %f\n", feedback[j].x, feedback[j].y, feedback[j].z);
-    //                printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
+                    data[ind++] = glm::vec3(cubes[hitModel].meshes[i].vertices[j].Position.x,
+                        cubes[hitModel].meshes[i].vertices[j].Position.y, cubes[hitModel].meshes[i].vertices[j].Position.z);
+                    data[ind++] = glm::vec3(cubes[hitModel].meshes[i].vertices[j].Normal.x,
+                        cubes[hitModel].meshes[i].vertices[j].Normal.y, cubes[hitModel].meshes[i].vertices[j].Normal.z);
+                }
+            }
+        
+            glm::mat4 model;
+            model = glm::translate(model, cubes_pos[hitModel]);
+            model = glm::scale(model, cube_size);
+                
+            glBindVertexArray(vao);
+            
+            feedbackShader.use();
+            feedbackShader.setMat4("model", model);
+            feedbackShader.setMat4("view", view);
+            feedbackShader.setMat4("projection", projection);
+            feedbackShader.setVec3("hitPoint", hitPoint);
+            feedbackShader.setVec3("hitDirection", camera.Front);
+            
+//            printf("HITPOINT: %f %f %f\n", hitPoint.x, hitPoint.y, hitPoint.z);
+                    
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
 
+            GLint inputAttrib = glGetAttribLocation(feedbackShader.ID, "position");
+            glEnableVertexAttribArray(inputAttrib);
+            glVertexAttribPointer(inputAttrib, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)0);
+            GLint inputAttrib2 = glGetAttribLocation(feedbackShader.ID, "normal");
+            glEnableVertexAttribArray(inputAttrib2);
+            glVertexAttribPointer(inputAttrib2, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(glm::vec3), (void*)(sizeof(glm::vec3)));
+            
+            glm::vec3 feedback[dim*2];
+
+            // Create transform feedback buffer
+            glBindBuffer(GL_ARRAY_BUFFER, tbo);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(feedback), nullptr, GL_STATIC_READ);
+
+            // Perform feedback transform
+            glEnable(GL_RASTERIZER_DISCARD);
+
+            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tbo);
+
+            glBeginTransformFeedback(GL_POINTS);
+                glDrawArrays(GL_POINTS, 0, sizeof(feedback));
+            glEndTransformFeedback();
+
+            glDisable(GL_RASTERIZER_DISCARD);
+
+            glFlush();
+
+            // Fetch and print results
+            glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, sizeof(feedback), feedback);
+            
+            int j = 0;
+            for(int i = 0; i<dim*2; i+=2)
+            {
+                j = i/2;
+                
+//                printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
+//                printf("FEED: %f %f %f\n", feedback[j].x, feedback[j].y, feedback[j].z);
+//                printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
+
+//                printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
+//                printf("FEED1: %f %f %f\n", feedback[i].x, feedback[i].y, feedback[i].z);
+//                printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
+//                printf("FEED2: %f %f %f\n", feedback[i+1].x, feedback[i+1].y, feedback[i+1].z);
+
+//                if(feedback[j].x < 1)
+//                {
+//                    printf("CIAO\n");
+//                }
+//                if (data[i].x != feedback[j].x || data[i].y != feedback[j].y || data[i].z != feedback[j].z)
+//                {
 //                    printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
-//                    printf("FEED1: %f %f %f\n", feedback[i].x, feedback[i].y, feedback[i].z);
+//                    printf("FEED: %f %f %f\n", feedback[j].x, feedback[j].y, feedback[j].z);
+//                }
+
+//                if (data[i+1].x != feedback[i+1].x || data[i+1].y != feedback[i+1].y || data[i+1].z != feedback[i+1].z)
+//                {
 //                    printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
 //                    printf("FEED2: %f %f %f\n", feedback[i+1].x, feedback[i+1].y, feedback[i+1].z);
-
-//                    if (data[i].x != feedback[j].x || data[i].y != feedback[j].y || data[i].z != feedback[j].z)
-//                    {
-//                        printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
-//                        printf("FEED: %f %f %f\n", feedback[j].x, feedback[j].y, feedback[j].z);
-//                    }
-
-//                    if (data[i+1].x != feedback[i+1].x || data[i+1].y != feedback[i+1].y || data[i+1].z != feedback[i+1].z)
-//                    {
-//                        printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
-//                        printf("FEED2: %f %f %f\n", feedback[i+1].x, feedback[i+1].y, feedback[i+1].z);
-//                    }
-                    
-                    data[i] = feedback[i];
-                }
+//                }
                 
-                cubes[c].UpdateData(data);
+                data[i] = feedback[i];
+                data[i+1] = feedback[i+1];
             }
+            
+            cubes[hitModel].UpdateData(data);
         }
         
         // 3 - Render the scene
@@ -655,24 +732,6 @@ int main()
         glUniform1f(kdLocation, Kd);
         glUniform1f(alphaLocation, alpha);
         glUniform1f(f0Location, F0);
-
-        /////// STATIC PLANE
-        GLint planeDiffuseLocation = glGetUniformLocation(object_shader.ID, "diffuseColor");
-        glUniform3fv(planeDiffuseLocation, 1, planeMaterial);
-
-        // The plane is static, so its Collision Shape is not subject to forces, and it does not move. Thus, we do not need to use dynamicsWorld to acquire the rototraslations, but we can just use directly glm to manage the matrices
-        // if, for some reason, the plane becomes a dynamic rigid body, the following code must be modified
-        glm::mat4 planeModelMatrix;
-        glm::mat3 planeNormalMatrix;
-        planeModelMatrix = glm::translate(planeModelMatrix, plane_pos);
-        planeModelMatrix = glm::scale(planeModelMatrix, plane_size);
-        planeNormalMatrix = glm::inverseTranspose(glm::mat3(view*planeModelMatrix));
-        glUniformMatrix4fv(glGetUniformLocation(object_shader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(planeModelMatrix));
-        glUniformMatrix3fv(glGetUniformLocation(object_shader.ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(planeNormalMatrix));
-
-        // we render the plane
-        planeModel.Draw(object_shader);
-        planeModelMatrix = glm::mat4(1.0f);
         
         ///// Render the deformable objects
         // model and normal matrices
@@ -761,6 +820,25 @@ int main()
             deformShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
 
             cubes[i].Draw(deformShader);
+            
+            // The plane is static, so its Collision Shape is not subject to forces, and it does not move. Thus, we do not need to use dynamicsWorld to acquire the rototraslations, but we can just use directly glm to manage the matrices
+            // if, for some reason, the plane becomes a dynamic rigid body, the following code must be modified
+            glm::mat4 planeModelMatrix;
+            planeModelMatrix = glm::translate(planeModelMatrix, plane_pos);
+            planeModelMatrix = glm::scale(planeModelMatrix, plane_size);
+            glUniformMatrix4fv(glGetUniformLocation(object_shader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(planeModelMatrix));
+            
+            deformShader.setMat4("model", planeModelMatrix);
+            deformShader.setMat4("view", view);
+            deformShader.setMat4("projection", projection);
+        
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, floorTexture);
+            deformShader.setInt("texture1", 1);
+
+            // we render the plane
+            planeModel.Draw(deformShader);
+            planeModelMatrix = glm::mat4(1.0f);
         }
 
 
@@ -809,18 +887,19 @@ int main()
             objModelMatrix = glm::mat4(1.0f);
         }
         
-//        glm::mat4 model = glm::mat4(1.0f);
-//        model = glm::translate(model, glm::vec3(2, 2, 2));
-//        model = glm::scale(model, glm::vec3(2)); // Make it a smaller cube
-        
-//        simpleShader.use();
-//        simpleShader.setMat4("model", model);
-//        simpleShader.setMat4("projection", projection);
-//        simpleShader.setMat4("view", view);
-//        simpleShader.setInt("texture1", 1);
-//        glActiveTexture(GL_TEXTURE1);
-//        glBindTexture(GL_TEXTURE_2D, normalMap);
-//        cubeModel.Draw(simpleShader);
+        // draw skybox as last
+        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        skyboxShader.use();
+        view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
+        skyboxShader.setMat4("view", view);
+        skyboxShader.setMat4("projection", projection);
+        // skybox cube
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS); // set depth function back to default
 
         if (shooting && shootingCooldown == 0)
         {
@@ -833,7 +912,7 @@ int main()
             btRigidBody* sphere;
             glm::mat4 unproject;
             
-            sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, radius, rot, 1, 0.3f, 0.3f);
+            sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, sphere_size, rot, 1, 0.3f, 0.3f);
             shoot.x = camera.Front.x/SCR_WIDTH;
             shoot.y = camera.Front.y/SCR_HEIGHT;
             shoot.z = 1.0f;
@@ -1187,4 +1266,56 @@ void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat 
     }
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+int getHitModel(glm::vec3 hitPoint, glm::vec3* cubes_pos, glm::vec3* cubes_size)
+{
+    int hitModel = 0;
+    
+    for (int i = 0; i<total_cubes; i++)
+    {
+//        printf("HITPOINT: %f %f %f\n", hitPoint.x, hitPoint.y, hitPoint.z);
+//        printf("CUBEPOS: %f %f %f\n", cubes_pos[i].x, cubes_pos[i].y, cubes_pos[i].z);
+        float threshold = (cubes_size[i].x + cubes_size[i].y + cubes_size[i].z)/3;
+        if (getDistance(hitPoint, cubes_pos[i]) < threshold + 5)
+        {
+//            printf("HIT MODEL: %d\n", i);
+            hitModel = i;
+        }
+    }
+    
+    return hitModel;
+}
+
+
+unsigned int loadCubemap(vector<std::string> faces)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
 }
