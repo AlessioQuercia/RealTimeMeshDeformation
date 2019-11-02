@@ -4,6 +4,7 @@
 layout (location = 0) in vec3 position;
 // vertex normal in world coordinate
 layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 texcoords;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -21,6 +22,8 @@ out vec3 Normal;
 out vec3 viewPosition;
 
 out vec4 FragPos;
+
+out vec2 TexCoords;
 
 const float range = 0.5f;
 const float power = 0.05f;
@@ -45,6 +48,8 @@ void main()
 	FragPos = model * vec4(position, 1.0);
 
 	vec4 worldPos = FragPos;
+
+	TexCoords = texcoords;
 
 	for (int i = 0; i<600; i++)
     {

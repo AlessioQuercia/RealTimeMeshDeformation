@@ -57,6 +57,8 @@ in vec4 FragPos;
 // this means that the normal values in each vertex will be interpolated on each fragment created during rasterization between two vertices
 in vec3 Normal;
 
+in vec2 TexCoords;
+
 // in the fragment shader, we need to calculate also the reflection vector for each fragment
 // to do this, we need to calculate in the vertex shader the view direction (in view coordinates) for each vertex, and to have it interpolated for each fragment by the rasterization stage
 in vec3 viewPosition;
@@ -64,6 +66,8 @@ in vec3 viewPosition;
 uniform vec3 viewPos;
 
 uniform float materialShininess;
+
+uniform sampler2D texture1;
 
 // output shader variable
 out vec4 colorFrag;
@@ -80,7 +84,8 @@ void main()
     // properties
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - vec3(FragPos.xyz));
-    vec3 result = vec3(0.1f, 0.1f, 0.1f);
+    vec3 result = texture(texture1, TexCoords).xyz;
+    // vec3 result = vec3(0.1f);
     // phase 1: Directional lighting
     if (dirLight.on)
         result += CalcDirLight(dirLight, norm, viewDir);

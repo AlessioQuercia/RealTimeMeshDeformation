@@ -136,7 +136,7 @@ glm::vec3 contactPoint1, contactPoint2;
 
 // dimensions and position of the static plane
 glm::vec3 plane_pos = glm::vec3(0.0f, -1.0f, 0.0f);
-glm::vec3 plane_size = glm::vec3(200.0f, 0.1f, 200.0f);
+glm::vec3 plane_size = glm::vec3(50.0f, 0.1f, 50.0f);
 glm::vec3 plane_rot = glm::vec3(0.0f, 0.0f, 0.0f);
 
 GLint num_side = 4;
@@ -428,7 +428,19 @@ int main()
     glm::vec3 cubes_pos[total_cubes];
     glm::vec3 cubes_size[total_cubes];
     
-    btRigidBody* plane = bulletSimulation.createRigidBody(BOX, plane_pos, plane_size, plane_rot, 0.0f, 0.3f, 0.3f);
+    int xoff = 0;
+    int zoff = 0;
+    
+    for (int i = 0; i<2; i++)
+    {
+        for (int j = 0; j<2; j++)
+        {
+            btRigidBody* plane = bulletSimulation.createRigidBody(BOX, glm::vec3(plane_pos.x - xoff, plane_pos.y, plane_pos.z + zoff), plane_size, plane_rot, 0.0f, 0.3f, 0.3f);
+            xoff += 100;
+        }
+        xoff = 0;
+        zoff += 100;
+    }
 
     int cnt = 0;
     // we create a 5x5 grid of rigid bodies
@@ -465,6 +477,7 @@ int main()
 //    unsigned int cubeTexture = loadTexture("textures\\high\\3.jpg");
 //    unsigned int cubeTexture = loadTexture("textures\\high\\4.jpg");
     unsigned int floorTexture = loadTexture("textures\\ground_mud.jpg");
+//    unsigned int floorTexture = loadTexture("textures\\SoilCracked.png");
     
     // framebuffer configuration
     // -------------------------
@@ -820,25 +833,39 @@ int main()
             deformShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
 
             cubes[i].Draw(deformShader);
+        }
             
-            // The plane is static, so its Collision Shape is not subject to forces, and it does not move. Thus, we do not need to use dynamicsWorld to acquire the rototraslations, but we can just use directly glm to manage the matrices
-            // if, for some reason, the plane becomes a dynamic rigid body, the following code must be modified
-            glm::mat4 planeModelMatrix;
-            planeModelMatrix = glm::translate(planeModelMatrix, plane_pos);
-            planeModelMatrix = glm::scale(planeModelMatrix, plane_size);
-            glUniformMatrix4fv(glGetUniformLocation(object_shader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(planeModelMatrix));
-            
-            deformShader.setMat4("model", planeModelMatrix);
-            deformShader.setMat4("view", view);
-            deformShader.setMat4("projection", projection);
+        int x_offset = 0;
+        int z_offset = 0;
         
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, floorTexture);
-            deformShader.setInt("texture1", 1);
+        for (int i = 0; i<2; i++)
+        {
+            for (int j = 0; j<2; j++)
+            {
+                // The plane is static, so its Collision Shape is not subject to forces, and it does not move. Thus, we do not need to use dynamicsWorld to acquire the rototraslations, but we can just use directly glm to manage the matrices
+                // if, for some reason, the plane becomes a dynamic rigid body, the following code must be modified
+                glm::mat4 planeModelMatrix;
+                planeModelMatrix = glm::translate(planeModelMatrix, glm::vec3(plane_pos.x - x_offset, plane_pos.y, plane_pos.z + z_offset));
+                planeModelMatrix = glm::scale(planeModelMatrix, plane_size);
+                glUniformMatrix4fv(glGetUniformLocation(object_shader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(planeModelMatrix));
+                
+                deformShader.setMat4("model", planeModelMatrix);
+                deformShader.setMat4("view", view);
+                deformShader.setMat4("projection", projection);
+            
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, floorTexture);
+                deformShader.setInt("texture1", 1);
 
-            // we render the plane
-            planeModel.Draw(deformShader);
-            planeModelMatrix = glm::mat4(1.0f);
+                // we render the plane
+                planeModel.Draw(deformShader);
+                planeModelMatrix = glm::mat4(1.0f);
+                
+                x_offset += 100;
+            }
+            
+            x_offset = 0;
+            z_offset += 100;
         }
 
 

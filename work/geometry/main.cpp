@@ -42,6 +42,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // if one of the WASD keys is pressed, we call the corresponding method of the Camera class
 void apply_camera_movements();
 float getDistance(glm::vec3 point1, glm::vec3 point2);
+unsigned int loadTexture(const char *path);
+unsigned int loadCubemap(vector<std::string> faces);
 
 // settings
 const unsigned int SCR_WIDTH = 1366;
@@ -251,6 +253,62 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     
+            float skyboxVertices[] = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    }; 
+    
+    
+    // skybox VAO
+    unsigned int skyboxVAO, skyboxVBO;
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    
     // Initialize verticesToDeform
     for (int i = 0; i<100; i++)
     {
@@ -272,6 +330,19 @@ int main()
     // the Shader Program for the objects used in the application
     Shader object_shader("geometry\\shaders\\13_phong.vert", "geometry\\shaders\\14_ggx.frag");
     Shader deformShader("geometry\\shaders\\shader.VERT", "geometry\\shaders\\shader.FRAG"); //, "geometry\\shaders\\shader.GEO");
+    Shader skyboxShader("advanced\\shaders\\skybox.VERT", "advanced\\shaders\\skybox.FRAG");
+    
+    vector<std::string> faces
+    {
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\right.jpg",
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\left.jpg",
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\top.jpg",
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\bottom.jpg",
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\front.jpg",
+        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\back.jpg"
+    };
+    
+    unsigned int cubemapTexture = loadCubemap(faces);
 
     // load models
     // -----------
@@ -279,13 +350,22 @@ int main()
     Model cubeModelHigh("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\highCube.obj");
     Model cubeModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj");
     Model sphereModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj");
+    Model sphereModelHigh("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj");
+    
+    // load textures
+    // -------------
+//    unsigned int cubeTexture = loadTexture("work\\Prova\\textures\\marble.jpg");
+    unsigned int cubeTexture = loadTexture("textures\\high\\4k.jpg");
+//    unsigned int cubeTexture = loadTexture("textures\\high\\1.jpg");
+//    unsigned int cubeTexture = loadTexture("textures\\high\\3.jpg");
+//    unsigned int cubeTexture = loadTexture("textures\\high\\4.jpg");
+    unsigned int floorTexture = loadTexture("textures\\ground_mud.jpg");
+//    unsigned int floorTexture = loadTexture("textures\\SoilCracked.png");
     
     // dimensions and position of the static plane
     glm::vec3 plane_pos = glm::vec3(0.0f, -1.0f, 0.0f);
-    glm::vec3 plane_size = glm::vec3(200.0f, 0.1f, 200.0f);
+    glm::vec3 plane_size = glm::vec3(50.0f, 0.1f, 50.0f);
     glm::vec3 plane_rot = glm::vec3(0.0f, 0.0f, 0.0f);
-    
-    btRigidBody* plane = bulletSimulation.createRigidBody(BOX, plane_pos, plane_size, plane_rot, 0.0f, 0.3f, 0.3f);
     
     GLint num_side = 4;
     // total number of the cubes
@@ -317,38 +397,6 @@ int main()
         for(j = 0; j < num_side; j++ )
         {
             cube_pos = glm::vec3((i - num_side)*15, 1.6f, (num_side - j)*15);
-//            cube = bulletSimulation.createRigidBody(BOX, cube_pos, cube_size, cube_rot, mass, 0.3f, 0.3f);
-            
-//            cube = bulletSimulation.createRigidBody(CONVEX_HULL, cube_pos, cube_size, cube_rot, mass, 0.3f, 0.3f, 
-//                                                    cubeModel.meshes);
-
-//            btTriangleMesh triangleMesh;
-//            for (int i = 0; i<cubeModel.meshes.size(); i++);
-//            {
-////                printf("%d\n", cubeModel.meshes[i].vertices.size());
-//                for (int j = 0; j<cubeModel.meshes[i].indices.size(); j+=3)
-//                {
-//                    int index = cubeModel.meshes[i].indices[j];
-//      
-//                    btVector3 first = btVector3(cubeModel.meshes[i].vertices[index].Position.x, 
-//                                                cubeModel.meshes[i].vertices[index].Position.y,
-//                                                cubeModel.meshes[i].vertices[index].Position.z);
-//
-//                    btVector3 second = btVector3(cubeModel.meshes[i].vertices[index + 1].Position.x, 
-//                                                cubeModel.meshes[i].vertices[index + 1].Position.y,
-//                                                cubeModel.meshes[i].vertices[index + 1].Position.z);
-//
-//                    btVector3 third = btVector3(cubeModel.meshes[i].vertices[index + 2].Position.x, 
-//                                                cubeModel.meshes[i].vertices[index + 2].Position.y,
-//                                                cubeModel.meshes[i].vertices[index + 2].Position.z);
-//
-//                    triangleMesh.addTriangleTriangle(first, second, third, true);
-//                }
-//            }
-//            cube = bulletSimulation.createRigidBody(TRIANGLE_MESH, cube_pos, cube_size, cube_rot, mass, 0.3f, 0.3f, triangleMesh);
-
-//            cube = bulletSimulation.createRigidBody(BOX, cube_pos, radius, cube_rot, mass, 0.3f, 0.3f,
-//                "C:\\Users\\Alessio\\Desktop\\Models\\highCube.bullet", "C:\\Users\\Alessio\\Desktop\\Models\\highCubeNative.bullet");
                 
             if (nSpheres > 0)
             {
@@ -358,6 +406,20 @@ int main()
             else
                 cube = bulletSimulation.createRigidBody(BOX, cube_pos, radius, cube_rot, mass, 0.3f, 0.3f);
         }
+    }
+    
+    int xoff = 0;
+    int zoff = 0;
+    
+    for (int i = 0; i<2; i++)
+    {
+        for (int j = 0; j<2; j++)
+        {
+            btRigidBody* plane = bulletSimulation.createRigidBody(BOX, glm::vec3(plane_pos.x - xoff, plane_pos.y, plane_pos.z + zoff), plane_size, plane_rot, 0.0f, 0.3f, 0.3f);
+            xoff += 100;
+        }
+        xoff = 0;
+        zoff += 100;
     }
 
     // Projection matrix: FOV angle, aspect ratio, near and far planes
@@ -474,7 +536,7 @@ int main()
         glUniformMatrix3fv(glGetUniformLocation(object_shader.ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(planeNormalMatrix));
 
         // we render the plane
-        cubeModel.Draw(object_shader);
+//        cubeModel.Draw(object_shader);
         planeModelMatrix = glm::mat4(1.0f);
         
         // GET COLLISIONS POINTS
@@ -533,18 +595,24 @@ int main()
 
         int num_cobjs = bulletSimulation.dynamicsWorld->getNumCollisionObjects();
         
-        nSpheres = 10;
+        nSpheres = 5;
+        int nHighSpheres = 5;
         nCubes = 3;
         int nHighCubes = 3;
 
-        for(i = 1; i < num_cobjs; i++ )
+        for(i = 0; i < num_cobjs; i++ )
         {
-            if (i <= total_cubes)
+            if (i < total_cubes)
             {
                 if (nSpheres > 0)
                 {
                     objectModel = &sphereModel;
                     nSpheres -= 1;
+                }
+                else if (nHighSpheres > 0)
+                {
+                    objectModel = &sphereModelHigh;
+                    nHighSpheres -= 1;
                 }
                 else
                 {
@@ -559,6 +627,43 @@ int main()
                 objectShader = &deformShader;
                 obj_size = cube_size;
                 glUniform3fv(objDiffuseLocation, 1, diffuseColor);
+            }
+            else if (i == total_cubes)
+            {
+                int x_offset = 0;
+                int z_offset = 0;
+                
+                for (int i = 0; i<2; i++)
+                {
+                    for (int j = 0; j<2; j++)
+                    {
+                        // The plane is static, so its Collision Shape is not subject to forces, and it does not move. Thus, we do not need to use dynamicsWorld to acquire the rototraslations, but we can just use directly glm to manage the matrices
+                        // if, for some reason, the plane becomes a dynamic rigid body, the following code must be modified
+                        glm::mat4 planeModelMatrix;
+                        planeModelMatrix = glm::translate(planeModelMatrix, glm::vec3(plane_pos.x - x_offset, plane_pos.y, plane_pos.z + z_offset));
+                        planeModelMatrix = glm::scale(planeModelMatrix, plane_size);
+                        glUniformMatrix4fv(glGetUniformLocation(object_shader.ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(planeModelMatrix));
+                        
+                        deformShader.setMat4("model", planeModelMatrix);
+                        deformShader.setMat4("view", view);
+                        deformShader.setMat4("projection", projection);
+                    
+                        glActiveTexture(GL_TEXTURE1);
+                        glBindTexture(GL_TEXTURE_2D, floorTexture);
+                        deformShader.setInt("texture1", 1);
+
+                        // we render the plane
+                        cubeModel.Draw(deformShader);
+                        planeModelMatrix = glm::mat4(1.0f);
+                        
+                        x_offset += 100;
+                    }
+                    
+                    x_offset = 0;
+                    z_offset += 100;
+                }
+                i += 3;
+                continue;
             }
             else
             {
@@ -670,6 +775,10 @@ int main()
                 objectShader->setFloat("spotLight.quadratic", 0.032f);
                 objectShader->setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
                 objectShader->setFloat("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+                
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D, cubeTexture);
+                deformShader.setInt("texture1", 1);
             }
             else
             {
@@ -691,19 +800,19 @@ int main()
             objModelMatrix = glm::mat4(1.0f);
         }
         
-
-        // configure transformation matrices
-        glm::mat4 model = glm::mat4(1.0f);
-        shader.use();
-        model = glm::translate(model, glm::vec3(0.0f, -0.8f, -10.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.08f, 0.08f, 0.08f));	// it's a bit too big for our scene, so scale it down
-        shader.setMat4("model", model);
-        shader.setMat4("view", view);
-        shader.setMat4("projection", projection);
-
-        // add time component to geometry shader in the form of a uniform
-        shader.setFloat("time", glfwGetTime());
-
+        // draw skybox as last
+        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+        skyboxShader.use();
+        view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
+        skyboxShader.setMat4("view", view);
+        skyboxShader.setMat4("projection", projection);
+        // skybox cube
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS); // set depth function back to default
 
         if (shooting && shootingCooldown == 0)
         {
@@ -716,7 +825,7 @@ int main()
             btRigidBody* sphere;
             glm::mat4 unproject;
             
-            sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, sphere_size, rot, 1, 0.15f, 0.15f);
+            sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, sphere_size, rot, 1, 0.3f, 0.3f);
             shoot.x = camera.Front.x/SCR_WIDTH;
             shoot.y = camera.Front.y/SCR_HEIGHT;
             shoot.z = 1.0f;
@@ -952,4 +1061,85 @@ void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat 
     }
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
+// utility function for loading a 2D texture from file
+// ---------------------------------------------------
+unsigned int loadTexture(char const * imagePath)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    
+    char path[] = "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\";
+    
+    char imgPath[strlen(path) + strlen(imagePath)] = "";
+    strcat(imgPath, path);
+    strcat(imgPath, imagePath);
+    
+    printf("%s\n", imgPath);
+    
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(imgPath, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << imgPath << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
+}
+
+
+unsigned int loadCubemap(vector<std::string> faces)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
 }
