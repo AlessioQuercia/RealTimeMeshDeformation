@@ -1,8 +1,8 @@
 .PHONY: clean All
 
 All:
-	@echo "----------Building project:[ geometry - Debug ]----------"
-	@cd "work\geometry" && "$(MAKE)" -f  "geometry.mk" && "$(MAKE)" -f  "geometry.mk" PostBuild
+	@echo "----------Building project:[ FeeFeed - Debug ]----------"
+	@cd "work\FeeFeed" && "$(MAKE)" -f  "FeeFeed.mk" && "$(MAKE)" -f  "FeeFeed.mk" PostBuild
 clean:
-	@echo "----------Cleaning project:[ geometry - Debug ]----------"
-	@cd "work\geometry" && "$(MAKE)" -f  "geometry.mk" clean
+	@echo "----------Cleaning project:[ FeeFeed - Debug ]----------"
+	@cd "work\FeeFeed" && "$(MAKE)" -f  "FeeFeed.mk" clean
