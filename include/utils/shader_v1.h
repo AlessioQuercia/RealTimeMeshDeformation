@@ -47,6 +47,8 @@ public:
         fShaderFile.exceptions (ifstream::failbit | ifstream::badbit);
         try
         {
+            printf("%s\n", vertexPath);
+            printf("%s\n", fragmentPath);
             // Open files
             vShaderFile.open(vertexPath);
             fShaderFile.open(fragmentPath);

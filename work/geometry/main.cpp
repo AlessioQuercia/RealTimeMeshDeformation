@@ -180,7 +180,7 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Compile and setup the shader
-    Shader textShader("FeeFeed\\shaders\\text.VERT", "FeeFeed\\shaders\\text.FRAG");
+    Shader textShader("..\\shaders\\text.VERT", "..\\shaders\\text.FRAG");
     glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(SCR_WIDTH), 0.0f, static_cast<GLfloat>(SCR_HEIGHT));
     textShader.use();
     glUniformMatrix4fv(glGetUniformLocation(textShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
@@ -190,7 +190,7 @@ int main()
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
 
     FT_Face face;
-    if (FT_New_Face(ft, "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\fonts\\segoepr.ttf", 0, &face))
+    if (FT_New_Face(ft, "..\\..\\..\\fonts\\segoepr.ttf", 0, &face))
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl; 
         
     FT_Set_Pixel_Sizes(face, 0, 48);  
@@ -326,20 +326,19 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader shader("geometry\\shaders\\explode.VERT", "geometry\\shaders\\explode.FRAG", "geometry\\shaders\\explode.GEO");
     // the Shader Program for the objects used in the application
-    Shader object_shader("geometry\\shaders\\13_phong.vert", "geometry\\shaders\\14_ggx.frag");
-    Shader deformShader("geometry\\shaders\\shader.VERT", "geometry\\shaders\\shader.FRAG"); //, "geometry\\shaders\\shader.GEO");
-    Shader skyboxShader("advanced\\shaders\\skybox.VERT", "advanced\\shaders\\skybox.FRAG");
+    Shader object_shader("..\\shaders\\13_phong.vert", "..\\shaders\\14_ggx.frag");
+    Shader deformShader("..\\shaders\\shader.VERT", "..\\shaders\\shader.FRAG"); 
+    Shader skyboxShader("..\\shaders\\skyboxV.VERT", "..\\shaders\\skyboxF.FRAG");
     
     vector<std::string> faces
     {
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\right.jpg",
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\left.jpg",
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\top.jpg",
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\bottom.jpg",
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\front.jpg",
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\back.jpg"
+        "..\\resources\\skybox\\right.jpg",
+        "..\\resources\\skybox\\left.jpg",
+        "..\\resources\\skybox\\top.jpg",
+        "..\\resources\\skybox\\bottom.jpg",
+        "..\\resources\\skybox\\front.jpg",
+        "..\\resources\\skybox\\back.jpg"
     };
     
     unsigned int cubemapTexture = loadCubemap(faces);
@@ -347,20 +346,15 @@ int main()
     // load models
     // -----------
 //    Model nanosuitModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\nanosuit\\nanosuit.obj");
-    Model cubeModelHigh("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\highCube.obj");
-    Model cubeModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj");
-    Model sphereModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj");
-    Model sphereModelHigh("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj");
+    Model cubeModelHigh("..\\..\\..\\models\\cube2\\highCube.obj");
+    Model cubeModel("..\\..\\..\\models\\cube2\\cube.obj");
+    Model sphereModel("..\\..\\..\\models\\sphere.obj");
+    Model sphereModelHigh("..\\..\\..\\models\\sphere\\veryHighSphere.obj");
     
     // load textures
     // -------------
-//    unsigned int cubeTexture = loadTexture("work\\Prova\\textures\\marble.jpg");
-    unsigned int cubeTexture = loadTexture("textures\\high\\4k.jpg");
-//    unsigned int cubeTexture = loadTexture("textures\\high\\1.jpg");
-//    unsigned int cubeTexture = loadTexture("textures\\high\\3.jpg");
-//    unsigned int cubeTexture = loadTexture("textures\\high\\4.jpg");
-    unsigned int floorTexture = loadTexture("textures\\ground_mud.jpg");
-//    unsigned int floorTexture = loadTexture("textures\\SoilCracked.png");
+    unsigned int cubeTexture = loadTexture("..\\..\\..\\textures\\high\\4k.jpg");
+    unsigned int floorTexture = loadTexture("..\\..\\..\\textures\\ground_mud.jpg");
     
     // dimensions and position of the static plane
     glm::vec3 plane_pos = glm::vec3(0.0f, -1.0f, 0.0f);
@@ -494,13 +488,6 @@ int main()
             
         bulletSimulation.dynamicsWorld->stepSimulation((deltaTime < maxSecPerFrame ? deltaTime : maxSecPerFrame), 0);
         
-        //////////////////////////    PRE - RENDER SCENE    //////////////////////////
-        
-        // 1 - Check whether there are new collision points. If yes, store them and their respective directions.
-        // 2 - If there are new collision points, pre - render the deformable objects and update their displacement and normal maps
-        // 3 - Render the whole scene (including the deformable objects, this time by using the updated displacement and normal maps).
-        
-        //////////////////////////    RENDER SCENE    //////////////////////////
         // We "install" the selected Shader Program as part of the current rendering process
         object_shader.use();
 
@@ -551,8 +538,6 @@ int main()
         for (i=0;i<numManifolds;i++)
         {
             btPersistentManifold* contactManifold = bulletSimulation.dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
-//            btCollisionObject* obA = static_cast<btCollisionObject*>(contactManifold->getBody0());
-//            btCollisionObject* obB = static_cast<btCollisionObject*>(contactManifold->getBody1());
         
             int numContacts = contactManifold->getNumContacts();
             
@@ -560,14 +545,9 @@ int main()
             {
                 btManifoldPoint& pt = contactManifold->getContactPoint(j);
                 if (pt.getPositionWorldOnA().y() > -0.8f)
-                {
-//                    printf("DISTANCE: %lf\n", pt.getDistance());
-//                    
+                {                 
                     btVector3 ptA = pt.getPositionWorldOnA();
                     btVector3 ptB = pt.getPositionWorldOnB();
-//
-//                    printf("WORLD POINT A: %lf %lf %lf\n", ptA.x(),ptA.y(),ptA.z());
-//                    printf("WORLD POINT B: %lf %lf %lf\n", ptB.x(),ptB.y(),ptB.z());
                     
                     contactPoint1 = glm::vec3(ptA.x(), ptA.y(), ptA.z());
                     contactPoint2 = glm::vec3(ptA.x(), ptA.y(), ptA.z());
@@ -690,7 +670,6 @@ int main()
             objNormalMatrix = glm::inverseTranspose(glm::mat3(view*objModelMatrix));
             
             glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "model"), 1, GL_FALSE, glm::value_ptr(objModelMatrix));
-//            glUniformMatrix3fv(glGetUniformLocation(objectShader->ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(objNormalMatrix));
         
             if (index_vtd + 1 < 599 && (contactPoint1.x != 0.0f && contactPoint1.y != 0.0f && contactPoint1.z != 0.0f))
             {
@@ -700,8 +679,6 @@ int main()
                 {
                     hittingDirections[index_vtd] = glm::vec3(camera.Front.x, camera.Front.y, camera.Front.z);
                     verticesToDeform[index_vtd++] = glm::vec3(contactPoint1.x, contactPoint1.y, contactPoint1.z);
-//                    printf("VERTICE MESH WORLD: %lf %lf %lf\n", contactPoint1.x, contactPoint1.y, contactPoint1.z);
-//                    printf("%d\n", index_vtd);
                 }
             }
             else if (index_vtd + 1 >= 599 && (contactPoint1.x != 0.0f && contactPoint1.y != 0.0f && contactPoint1.z != 0.0f))
@@ -789,13 +766,6 @@ int main()
                 glUniformMatrix3fv(glGetUniformLocation(objectShader->ID, "normalMatrix"), 1, GL_FALSE, glm::value_ptr(objNormalMatrix));
             }
                 
-//            // view/projection transformations
-//            glm::mat4 model = glm::mat4(1.0f);
-//            glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100000.0f);
-//            glm::mat4 view = camera.GetViewMatrix();
-//            objectShader->setMat4("model", model);
-//            objectShader->setMat4("view", view);
-//            objectShader->setMat4("projection", projection);
             objectModel->Draw(*objectShader);
             objModelMatrix = glm::mat4(1.0f);
         }
@@ -917,30 +887,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         shooting = true;
 //        shootingCooldown = 200;
     }
-    
-//    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-//    if (shooting && shootingCooldown == 0)
-//    {
-//        btVector3 pos, impulse;
-//        glm::vec3 radius = glm::vec3(0.2f, 0.2f, 0.2f);
-//        glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f);
-//        glm::vec4 shoot;
-//        GLfloat shootInitialSpeed = 30.0f;
-//        btRigidBody* sphere;
-//        glm::mat4 unproject;
-//        
-//        sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, radius, rot, 1, 0.3f, 0.3f);
-//        shoot.x = camera.Front.x/SCR_WIDTH;
-//        shoot.y = camera.Front.y/SCR_HEIGHT;
-//        shoot.z = 1.0f;
-//        shoot.w = 1.0f;
-//        
-//        unproject = glm::inverse(projection*view);
-//        shoot = glm::normalize(unproject*shoot) * shootInitialSpeed;
-//        
-//        impulse = btVector3(shoot.x, shoot.y, shoot.z);
-//        sphere->applyCentralImpulse(impulse);
-//    }
     
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
     {
@@ -1071,16 +1017,8 @@ unsigned int loadTexture(char const * imagePath)
     unsigned int textureID;
     glGenTextures(1, &textureID);
     
-    char path[] = "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\";
-    
-    char imgPath[strlen(path) + strlen(imagePath)] = "";
-    strcat(imgPath, path);
-    strcat(imgPath, imagePath);
-    
-    printf("%s\n", imgPath);
-    
     int width, height, nrComponents;
-    unsigned char *data = stbi_load(imgPath, &width, &height, &nrComponents, 0);
+    unsigned char *data = stbi_load(imagePath, &width, &height, &nrComponents, 0);
     if (data)
     {
         GLenum format;
@@ -1104,7 +1042,7 @@ unsigned int loadTexture(char const * imagePath)
     }
     else
     {
-        std::cout << "Texture failed to load at path: " << imgPath << std::endl;
+        std::cout << "Texture failed to load at path: " << imagePath << std::endl;
         stbi_image_free(data);
     }
 

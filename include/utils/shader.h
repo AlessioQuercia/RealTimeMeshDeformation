@@ -29,24 +29,11 @@ public:
         fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         gShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         
-        char path[] = "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\";
-        
-        char vPath[strlen(path) + strlen(vertexPath)] = "";
-        strcat(vPath, path);
-        strcat(vPath, vertexPath);
-        
-        char fPath[strlen(path) + strlen(fragmentPath)] = "";
-        strcat(fPath, path);
-        strcat(fPath, fragmentPath);
-        
-        printf("%s\n", vPath);
-        printf("%s\n", fPath);
-        
         try 
         {
             // open files
-            vShaderFile.open(vPath);
-            fShaderFile.open(fPath);
+            vShaderFile.open(vertexPath);
+            fShaderFile.open(fragmentPath);
             std::stringstream vShaderStream, fShaderStream;
             // read file's buffer contents into streams
             vShaderStream << vShaderFile.rdbuf();
@@ -60,12 +47,12 @@ public:
             // if geometry shader path is present, also load a geometry shader
             if(geometryPath != nullptr)
             {
-                char gPath[strlen(path) + strlen(geometryPath)] = "";
-                strcat(gPath, path);
-                strcat(gPath, geometryPath);
-                
-                printf("%s\n", gPath);
-                gShaderFile.open(gPath);
+//                char gPath[strlen(path) + strlen(geometryPath)] = "";
+//                strcat(gPath, path);
+//                strcat(gPath, geometryPath);
+//                
+//                printf("%s\n", gPath);
+                gShaderFile.open(geometryPath);
                 std::stringstream gShaderStream;
                 gShaderStream << gShaderFile.rdbuf();
                 gShaderFile.close();
@@ -115,6 +102,15 @@ public:
             glDeleteShader(geometry);
 
     }
+    
+    std::string ExePath()
+    {
+        char buffer[MAX_PATH];
+        GetModuleFileName( NULL, buffer, MAX_PATH );
+        std::string::size_type pos = std::string( buffer ).find_last_of( "\\/" );
+        return std::string( buffer ).substr( 0, pos);
+    }
+    
     // activate the shader
     // ------------------------------------------------------------------------
     void use() 

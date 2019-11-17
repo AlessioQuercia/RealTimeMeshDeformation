@@ -5,8 +5,43 @@
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
       <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\work\FeeFeed\main.cpp" Name="FileName"/>
-      <int Value="383" Name="FirstVisibleLine"/>
-      <int Value="395" Name="CurrentLine"/>
+      <int Value="213" Name="FirstVisibleLine"/>
+      <int Value="233" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\work\geometry\main.cpp" Name="FileName"/>
+      <int Value="325" Name="FirstVisibleLine"/>
+      <int Value="327" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\work\work06\work06b.cpp" Name="FileName"/>
+      <int Value="176" Name="FirstVisibleLine"/>
+      <int Value="186" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\include\utils\shader.h" Name="FileName"/>
+      <int Value="25" Name="FirstVisibleLine"/>
+      <int Value="29" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\include\utils\shader_v1.h" Name="FileName"/>
+      <int Value="42" Name="FirstVisibleLine"/>
+      <int Value="49" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="C:\Users\Alessio\Documents\GitHub\Progetto_RTGP\include\utils\shader_fee.h" Name="FileName"/>
+      <int Value="42" Name="FirstVisibleLine"/>
+      <int Value="28" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>

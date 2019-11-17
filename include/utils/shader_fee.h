@@ -23,17 +23,10 @@ public:
         // ensure ifstream objects can throw exceptions:
         vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         
-        char path[] = "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\";
-        
-        char vPath[strlen(path) + strlen(vertexPath)] = "";
-        strcat(vPath, path);
-        strcat(vPath, vertexPath);
-        printf("%s\n", vPath);
-        
         try 
         {
             // open files
-            vShaderFile.open(vPath);
+            vShaderFile.open(vertexPath);
             std::stringstream vShaderStream;
             // read file's buffer contents into streams
             vShaderStream << vShaderFile.rdbuf();

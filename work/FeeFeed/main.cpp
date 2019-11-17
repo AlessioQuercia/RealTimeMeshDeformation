@@ -163,20 +163,6 @@ float mass = 0.0f;  // static
 bool hit;
 bool first;
 
-// Vertex shader
-const GLchar* vertexShaderSrc = R"glsl(
-    #version 150 core
-
-    in vec3 position;
-    in vec3 normal;
-    out vec3 outValue;
-
-    void main()
-    {
-        outValue = position;
-    }
-)glsl";
-
 int main()
 {
     dirlightOn = false;
@@ -235,7 +221,7 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Compile and setup the shader
-    Shader shader("FeeFeed\\shaders\\text.VERT", "FeeFeed\\shaders\\text.FRAG");
+    Shader shader("..\\shaders\\text.VERT", "..\\shaders\\text.FRAG");
     glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(SCR_WIDTH), 0.0f, static_cast<GLfloat>(SCR_HEIGHT));
     shader.use();
     glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
@@ -245,7 +231,7 @@ int main()
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
 
     FT_Face face;
-    if (FT_New_Face(ft, "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\fonts\\segoepr.ttf", 0, &face))
+    if (FT_New_Face(ft, "..\\..\\..\\fonts\\segoepr.ttf", 0, &face))
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl; 
         
     FT_Set_Pixel_Sizes(face, 0, 48);  
@@ -379,50 +365,47 @@ int main()
     // build and compile shaders
     // -------------------------
     // the Shader Program for the objects used in the application
-    Shader object_shader("Feedback\\shaders\\13_phong.vert", "Feedback\\shaders\\14_ggx.frag");
-    Shader deformShader("FeeFeed\\shaders\\shaderNM.VERT", "FeeFeed\\shaders\\shaderNM.FRAG");
-    Shader updateDisplacementShader("Feedback\\shaders\\shaderNMDisplacement.VERT", "Feedback\\shaders\\shaderNMDisplacement.FRAG");
-    Shader simpleShader("Feedback\\shaders\\simpleShader.VERT", "Feedback\\shaders\\simpleShader.FRAG");    
-//    ShaderFee feedbackShader("FeeFeed\\shaders\\simpleFeed.VERT");
-    ShaderFee feedbackShader("FeeFeed\\shaders\\feedback.VERT");
-    Shader skyboxShader("advanced\\shaders\\skybox.VERT", "advanced\\shaders\\skybox.FRAG");
+    Shader object_shader("..\\shaders\\13_phong.vert", "..\\shaders\\14_ggx.frag");
+    Shader deformShader("..\\shaders\\shaderNM.VERT", "..\\shaders\\shaderNM.FRAG");   
+    ShaderFee feedbackShader("..\\shaders\\feedback.VERT");
+    Shader skyboxShader("..\\shaders\\skyboxV.VERT", "..\\shaders\\skyboxF.FRAG");
     
     vector<std::string> faces
     {
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\right.jpg",
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\left.jpg",
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\top.jpg",
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\bottom.jpg",
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\front.jpg",
-        "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\work\\advanced\\resources\\skybox\\back.jpg"
+        "..\\resources\\skybox\\right.jpg",
+        "..\\resources\\skybox\\left.jpg",
+        "..\\resources\\skybox\\top.jpg",
+        "..\\resources\\skybox\\bottom.jpg",
+        "..\\resources\\skybox\\front.jpg",
+        "..\\resources\\skybox\\back.jpg"
     };
     
     unsigned int cubemapTexture = loadCubemap(faces);
 
     // load models
     // -----------
-    Model cubeModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj");
-    Model planeModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj");
-    Model sphereModel("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere.obj", 1);
+    Model cubeModel("..\\..\\..\\models\\cube2\\cube.obj");
+    Model planeModel("..\\..\\..\\models\\cube2\\cube.obj");
+    Model sphereModel("..\\..\\..\\models\\sphere.obj", 1);
     
     Model cubes[total_cubes] = { 
                                 // ITEMS
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\highCube.obj"),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\highCube.obj"),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\highCube.obj"),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj"),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj"),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\cube2\\cube.obj"),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\veryHighSphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\sphere.obj", 1),
-                                Model("C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\models\\sphere\\sphere.obj", 1)
+                                Model("..\\..\\..\\models\\cube2\\highCube.obj"),
+                                Model("..\\..\\..\\models\\cube2\\highCube.obj"),
+                                Model("..\\..\\..\\models\\cube2\\highCube.obj"),
+                                Model("..\\..\\..\\models\\cube2\\cube.obj"),
+                                Model("..\\..\\..\\models\\cube2\\cube.obj"),
+                                Model("..\\..\\..\\models\\cube2\\cube.obj"),
+                                Model("..\\..\\..\\models\\sphere\\veryHighSphere.obj", 1),
+                                Model("..\\..\\..\\models\\sphere\\veryHighSphere.obj", 1),
+                                Model("..\\..\\..\\models\\sphere\\veryHighSphere.obj", 1),
+                                Model("..\\..\\..\\models\\sphere\\veryHighSphere.obj", 1),
+                                Model("..\\..\\..\\models\\sphere\\veryHighSphere.obj", 1),
+                                Model("..\\..\\..\\models\\sphere\\sphere.obj", 1),
+                                Model("..\\..\\..\\models\\sphere\\sphere.obj", 1),
+                                Model("..\\..\\..\\models\\sphere\\sphere.obj", 1),
+                                Model("..\\..\\..\\models\\sphere\\sphere.obj", 1),
+                                Model("..\\..\\..\\models\\sphere\\sphere.obj", 1)
                                 };
                        
     glm::vec3 cubes_pos[total_cubes];
@@ -466,18 +449,13 @@ int main()
     
     // load textures (we now use a utility function to keep the code more organized)
     // -----------------------------------------------------------------------------
-    unsigned int normalMap = loadTexture("\\models\\cube2\\normalMap.png");
-    unsigned int displacementMap = loadTexture("\\models\\cube2\\displacementMap2.png");
+    unsigned int normalMap = loadTexture("..\\..\\..\\models\\cube2\\normalMap.png");
+    unsigned int displacementMap = loadTexture("..\\..\\..\\models\\cube2\\displacementMap2.png");
     
     // load textures
     // -------------
-//    unsigned int cubeTexture = loadTexture("work\\Prova\\textures\\marble.jpg");
-    unsigned int cubeTexture = loadTexture("textures\\high\\4k.jpg");
-//    unsigned int cubeTexture = loadTexture("textures\\high\\1.jpg");
-//    unsigned int cubeTexture = loadTexture("textures\\high\\3.jpg");
-//    unsigned int cubeTexture = loadTexture("textures\\high\\4.jpg");
-    unsigned int floorTexture = loadTexture("textures\\ground_mud.jpg");
-//    unsigned int floorTexture = loadTexture("textures\\SoilCracked.png");
+    unsigned int cubeTexture = loadTexture("..\\..\\..\\textures\\high\\4k.jpg");
+    unsigned int floorTexture = loadTexture("..\\..\\..\\textures\\ground_mud.jpg");
     
     // framebuffer configuration
     // -------------------------
@@ -502,23 +480,6 @@ int main()
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    
-    // Compile shader
-//    GLuint shader = glCreateShader(GL_VERTEX_SHADER);
-//    glShaderSource(shader, 1, &vertexShaderSrc, nullptr);
-//    glCompileShader(shader);
-//
-//    // Create program and specify transform feedback variables
-//    GLuint program = glCreateProgram();
-//    glAttachShader(program, shader);
-//
-//    const GLchar* feedbackVaryings[] = { "outValue" };
-//    glTransformFeedbackVaryings(program, 1, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
-//
-//    glLinkProgram(program);
-//    glUseProgram(program);
-
-//    feedbackShader.use();
     
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -561,12 +522,8 @@ int main()
         double currentTime = glfwGetTime();
         nbFrames++;
         
-//        cout<<(currentTime - startTime)<<endl;
-        
         if (currentTime - startTime >= 1.0)
         {
-//            printf("%f ms/frame\n", 1000.0/double(nbFrames));
-//            sprintf(fps_num, "%d", nbFrames);
             fps_num = std::to_string(nbFrames);
             startTime = glfwGetTime();
             nbFrames = 0;
@@ -681,31 +638,6 @@ int main()
             for(int i = 0; i<dim*2; i+=2)
             {
                 j = i/2;
-                
-//                printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
-//                printf("FEED: %f %f %f\n", feedback[j].x, feedback[j].y, feedback[j].z);
-//                printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
-
-//                printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
-//                printf("FEED1: %f %f %f\n", feedback[i].x, feedback[i].y, feedback[i].z);
-//                printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
-//                printf("FEED2: %f %f %f\n", feedback[i+1].x, feedback[i+1].y, feedback[i+1].z);
-
-//                if(feedback[j].x < 1)
-//                {
-//                    printf("CIAO\n");
-//                }
-//                if (data[i].x != feedback[j].x || data[i].y != feedback[j].y || data[i].z != feedback[j].z)
-//                {
-//                    printf("POS: %f %f %f\n", data[i].x, data[i].y, data[i].z);
-//                    printf("FEED: %f %f %f\n", feedback[j].x, feedback[j].y, feedback[j].z);
-//                }
-
-//                if (data[i+1].x != feedback[i+1].x || data[i+1].y != feedback[i+1].y || data[i+1].z != feedback[i+1].z)
-//                {
-//                    printf("NORM: %f %f %f\n", data[i+1].x, data[i+1].y, data[i+1].z);
-//                    printf("FEED2: %f %f %f\n", feedback[i+1].x, feedback[i+1].y, feedback[i+1].z);
-//                }
                 
                 data[i] = feedback[i];
                 data[i+1] = feedback[i+1];
@@ -900,9 +832,6 @@ int main()
             objModelMatrix = glm::make_mat4(matrix)*glm::scale(objModelMatrix, obj_size);
             objNormalMatrix = glm::inverseTranspose(glm::mat3(view*objModelMatrix));
             
-//            glm::vec3 position = glm::vec3(objModelMatrix[3][0], objModelMatrix[3][1], objModelMatrix[3][2]);
-//            directions[ind] = positions[ind++] - position;
-            
             glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "model"), 1, GL_FALSE, glm::value_ptr(objModelMatrix));
             glUniform3fv(objDiffuseLocation, 1, shootColor);
             glUniformMatrix4fv(glGetUniformLocation(objectShader->ID, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(objModelMatrix));
@@ -1034,32 +963,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
         shooting = true;
-//        shootingCooldown = 200;
     }
-    
-//    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-//    if (shooting && shootingCooldown == 0)
-//    {
-//        btVector3 pos, impulse;
-//        glm::vec3 radius = glm::vec3(0.2f, 0.2f, 0.2f);
-//        glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f);
-//        glm::vec4 shoot;
-//        GLfloat shootInitialSpeed = 30.0f;
-//        btRigidBody* sphere;
-//        glm::mat4 unproject;
-//        
-//        sphere = bulletSimulation.createRigidBody(SPHERE, camera.Position, radius, rot, 1, 0.3f, 0.3f);
-//        shoot.x = camera.Front.x/SCR_WIDTH;
-//        shoot.y = camera.Front.y/SCR_HEIGHT;
-//        shoot.z = 1.0f;
-//        shoot.w = 1.0f;
-//        
-//        unproject = glm::inverse(projection*view);
-//        shoot = glm::normalize(unproject*shoot) * shootInitialSpeed;
-//        
-//        impulse = btVector3(shoot.x, shoot.y, shoot.z);
-//        sphere->applyCentralImpulse(impulse);
-//    }
     
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE)
     {
@@ -1208,16 +1112,8 @@ unsigned int loadTexture(char const * imagePath)
     unsigned int textureID;
     glGenTextures(1, &textureID);
     
-    char path[] = "C:\\Users\\Alessio\\Documents\\GitHub\\Progetto_RTGP\\";
-    
-    char imgPath[strlen(path) + strlen(imagePath)] = "";
-    strcat(imgPath, path);
-    strcat(imgPath, imagePath);
-    
-    printf("%s\n", imgPath);
-    
     int width, height, nrComponents;
-    unsigned char *data = stbi_load(imgPath, &width, &height, &nrComponents, 0);
+    unsigned char *data = stbi_load(imagePath, &width, &height, &nrComponents, 0);
     if (data)
     {
         GLenum format;
@@ -1241,7 +1137,7 @@ unsigned int loadTexture(char const * imagePath)
     }
     else
     {
-        std::cout << "Texture failed to load at path: " << imgPath << std::endl;
+        std::cout << "Texture failed to load at path: " << imagePath << std::endl;
         stbi_image_free(data);
     }
 
